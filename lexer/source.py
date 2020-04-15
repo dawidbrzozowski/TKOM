@@ -14,11 +14,11 @@ class FileSource(Source):
     def read_line(self):
         return self.fs.readline()
 
-    def is_end_of_text(self, last_line=None):
+    def is_end_of_text(self, last_line=None)->bool:
         last_pos = self.fs.tell()
         line = self.read_line()
         self.fs.seek(last_pos)
-        return True if line == "" else False
+        return True if not line else False
 
     def __del__(self):
         self.fs.close()
