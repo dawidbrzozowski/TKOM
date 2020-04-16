@@ -2,16 +2,15 @@ from enum import Enum, auto
 
 
 class TokenType(Enum):
+    """
+    TokenTypes with no value.
+    """
     # data types
     T_INT = auto()
     T_DOUBLE = auto()
     T_CHAR = auto()
     T_BOOL = auto()
-
-    # const values
-    T_CHARACTER = auto()
-    T_FLOAT_NUM = auto()
-    T_INT_NUM = auto()
+    T_STRING = auto()
 
     # punctuation
     T_COMMA = auto()
@@ -43,7 +42,6 @@ class TokenType(Enum):
     T_NOT = auto()
 
     # other
-    T_ID = auto()
     T_EOT = auto()
     T_IF = auto()
     T_ELSE = auto()
@@ -55,6 +53,20 @@ class TokenType(Enum):
     T_VOID = auto()
     T_FUNCTION = auto()
 
+    """
+    TokenTypes that must have a value
+    """
+
     # tokens specific to task
     T_UNIT = auto()
     T_PHYS = auto()
+
+    # const values
+    VT_CHAR = auto()
+    VT_STRING = auto()
+    VT_DOUBLE = auto()
+    VT_INT = auto()
+    VT_UNIT = auto()
+    VT_PHYS = auto()
+    # variable names etc.
+    VT_ID = auto()

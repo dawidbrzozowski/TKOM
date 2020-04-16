@@ -1,4 +1,4 @@
-from lexer.stream import FileSource, StdInSource
+from lexer.source import FileSource
 
 import unittest
 

@@ -1,1 +1,1 @@
-test text
+test int 5 double 1
