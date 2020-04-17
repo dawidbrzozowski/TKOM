@@ -43,3 +43,10 @@ class ValueToken(BaseToken):
         if self.type == other.type and self.value == other.value:
             return True
         return False
+
+
+def create_token(token_type: TokenType, value, pos_start, pos_end):
+    if token_type.has_value_field():
+        return ValueToken(token_type, value, pos_start, pos_end)
+    else:
+        return BaseToken(token_type, pos_start, pos_end)

@@ -1,3 +1,0 @@
-test text1
-test text2
-test text3

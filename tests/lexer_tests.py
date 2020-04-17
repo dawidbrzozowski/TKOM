@@ -1,7 +1,7 @@
 from lexer.lexer import Lexer
 import unittest
 
-from lexer.token import BaseToken
+from lexer.token.tokens import BaseToken, ValueToken
 from lexer.token.token_type import TokenType
 
 
@@ -12,7 +12,7 @@ class LexerTest(unittest.TestCase):
 
     def test_lex_data_types(self):
         line = "int double char bool string "
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_INT),
                     BaseToken(TokenType.T_DOUBLE),
                     BaseToken(TokenType.T_CHAR),
@@ -22,7 +22,7 @@ class LexerTest(unittest.TestCase):
 
     def test_lex_punctuation_types(self):
         line = ", . : ; { } ( )"
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_COMMA),
                     BaseToken(TokenType.T_DOT),
                     BaseToken(TokenType.T_COLON),
@@ -35,7 +35,7 @@ class LexerTest(unittest.TestCase):
 
     def test_lex_math_operations_types(self):
         line = "+ - * /"
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_PLUS),
                     BaseToken(TokenType.T_MINUS),
                     BaseToken(TokenType.T_MUL),
@@ -44,7 +44,7 @@ class LexerTest(unittest.TestCase):
 
     def test_math_order_types(self):
         line = "<= < >= > == !="
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_LESS_OR_EQ),
                     BaseToken(TokenType.T_LESS),
                     BaseToken(TokenType.T_GREATER_OR_EQ),
@@ -55,7 +55,7 @@ class LexerTest(unittest.TestCase):
 
     def test_logical_types(self):
         line = "or and not"
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_OR),
                     BaseToken(TokenType.T_AND),
                     BaseToken(TokenType.T_NOT)]
@@ -63,7 +63,7 @@ class LexerTest(unittest.TestCase):
 
     def test_other_types(self):
         line = "if else true false return while = void function"
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_IF),
                     BaseToken(TokenType.T_ELSE),
                     BaseToken(TokenType.T_TRUE),
@@ -77,27 +77,27 @@ class LexerTest(unittest.TestCase):
 
     def test_specific_to_task_types(self):
         line = "unit phys"
-        predicted = self.lexer.get_tokens_from_line(line)
+        predicted = self.lexer._get_tokens_from_line(line)
         expected = [BaseToken(TokenType.T_UNIT),
                     BaseToken(TokenType.T_PHYS)]
         self.assertEqual(expected, predicted)
 
     def test_const_values(self):
         line = "'c' \"string\" 5 2.5"
-        predicted = self.lexer.get_tokens_from_line(line)
-        expected = [BaseToken(TokenType.VT_CHAR, "'c'"),
-                    BaseToken(TokenType.VT_STRING, '"string"'),
-                    BaseToken(TokenType.VT_INT, "5"),
-                    BaseToken(TokenType.VT_DOUBLE, "2.5")]
+        predicted = self.lexer._get_tokens_from_line(line)
+        expected = [ValueToken(TokenType.VT_CHAR, "'c'"),
+                    ValueToken(TokenType.VT_STRING, '"string"'),
+                    ValueToken(TokenType.VT_INT, "5"),
+                    ValueToken(TokenType.VT_DOUBLE, "2.5")]
         self.assertEqual(expected, predicted)
 
     def test_id(self):
         line = "var_name x y z"
-        predicted = self.lexer.get_tokens_from_line(line)
-        expected = [BaseToken(TokenType.VT_ID, "var_name"),
-                    BaseToken(TokenType.VT_ID, "x"),
-                    BaseToken(TokenType.VT_ID, "y"),
-                    BaseToken(TokenType.VT_ID, "z")]
+        predicted = self.lexer._get_tokens_from_line(line)
+        expected = [ValueToken(TokenType.VT_ID, "var_name"),
+                    ValueToken(TokenType.VT_ID, "x"),
+                    ValueToken(TokenType.VT_ID, "y"),
+                    ValueToken(TokenType.VT_ID, "z")]
         self.assertEqual(expected, predicted)
 
 

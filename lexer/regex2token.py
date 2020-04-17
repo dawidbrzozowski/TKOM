@@ -1,4 +1,14 @@
 from lexer.token.token_type import TokenType
+import re
+
+
+def compile_regex2token():
+    regex2token_compiled = {}
+    for regex in regex2token:
+        regex_compiled = re.compile(regex)
+        regex2token_compiled[regex_compiled] = regex2token[regex]
+    return regex2token_compiled
+
 
 regex2token = {
     r'\n': TokenType.T_IGNORE,
