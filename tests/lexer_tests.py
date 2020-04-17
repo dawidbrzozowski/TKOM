@@ -1,4 +1,4 @@
-from lexer.lexer import Lexer
+from lexer.lexer import LexerBase
 import unittest
 
 from lexer.token.tokens import BaseToken, ValueToken
@@ -8,7 +8,7 @@ from lexer.token.token_type import TokenType
 class LexerTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.lexer = Lexer()
+        self.lexer = LexerBase()
 
     def test_lex_data_types(self):
         line = "int double char bool string "

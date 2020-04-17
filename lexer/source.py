@@ -1,8 +1,11 @@
+STDIN_EOT_TEXT = 'DONE'
+
+
 class Source:
     def read_line(self):
         pass
 
-    def is_end_of_text(self, last_line=None):
+    def is_end_of_text(self):
         pass
 
 
@@ -12,22 +15,25 @@ class FileSource(Source):
         self.eof = False
 
     def read_line(self):
-        return self.fs.readline()
+        line = self.fs.readline()
+        if not line:
+            self.eof = True
+        return line
 
-    def is_end_of_text(self, last_line=None)->bool:
-        last_pos = self.fs.tell()
-        line = self.read_line()
-        self.fs.seek(last_pos)
-        return True if not line else False
+    def is_end_of_text(self):
+        return self.eof
 
     def __del__(self):
         self.fs.close()
 
 
 class StdInSource(Source):
-    def read_line(self):
-        text = input('> ')
-        return text
+    def __init__(self):
+        self.text = None
 
-    def is_end_of_text(self, last_line=None):
-        return last_line == 'DONE'
+    def read_line(self):
+        self.text = input('stdin code > ')
+        return self.text
+
+    def is_end_of_text(self):
+        return self.text == STDIN_EOT_TEXT

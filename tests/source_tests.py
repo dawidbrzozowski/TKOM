@@ -12,6 +12,7 @@ class TestSource(unittest.TestCase):
         file_source = FileSource(TEST_SOURCE_1_LINE)
         text = file_source.read_line()
         self.assertEqual("test int 5 double 1", text, msg='Error in first line.')
+        file_source.read_line()
         self.assertEqual(True, file_source.is_end_of_text(), 'Error when checking EOF')
 
     def test_file_source_three_lines(self):
@@ -20,6 +21,7 @@ class TestSource(unittest.TestCase):
         self.assertEqual("test text1\n", text, msg='Error in first line.')
         text = file_source.read_line()
         self.assertEqual("test text2", text, msg='Error in second line.')
+        file_source.read_line()
         self.assertEqual(True, file_source.is_end_of_text(), msg='Error when checking EOF')
 
 

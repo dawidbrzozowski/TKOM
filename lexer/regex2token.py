@@ -50,6 +50,7 @@ regex2token = {
     r'<': TokenType.T_LESS,
     r'>': TokenType.T_GREATER,
     r'!=': TokenType.T_NOT_EQ,
+    r'DONE': TokenType.T_EOT,
     r'\d+\.\d+(?![\w])': TokenType.VT_DOUBLE,
     r'(0|[1-9]\d*)(?![\w])': TokenType.VT_INT,
     r'\'.\'(?![\w\d])': TokenType.VT_CHAR,
