@@ -1,26 +1,27 @@
 import re
 
+from errors.error import LexerException
+from lexer.regex_matched import MatchedToken
 from lexer.source import Source, FileSource
-from lexer.token import Token
-from lexer.token_type import TokenType
-from lexer.token_type_regexp import token_exprs
+from token.token import Token
+from token.token_type import TokenType
+from lexer.regex2token import regex2token
 
 
-class LexError(Exception):
-    def __init__(self, char, line_num):
-        self.char = char
-        self.line_num = line_num
-
-    def __repr__(self):
-        return 'Illegal character: %s, at line %d\n' % (self.char, self.line_num)
+def init_regex2token():
+    regex2token_compiled = {}
+    for regex in regex2token:
+        regex_compiled = re.compile(regex)
+        regex2token_compiled[regex_compiled] = regex2token[regex]
+    return regex2token_compiled
 
 
 class Lexer:
     def __init__(self, source_: Source = None):
         self.source = source_
-        self.position = 0
-        self.curr_line = 0
-        self.token_regexps = token_exprs
+        self.column = 0
+        self.row = 0
+        self.regex2token: dict = init_regex2token()
 
     def get_tokens_from_next_line(self):
         line = self.source.read_line()
@@ -30,37 +31,47 @@ class Lexer:
         if line:
             tokens = self.lex_line(line)
         else:
-            tokens = [Token(TokenType.T_EOT, row=self.curr_line)]
+            tokens = [Token(TokenType.T_EOT)]
         return tokens
 
     def lex_line(self, line):
-        pos = 0
+        self.column = 0
         tokens = []
-        while pos < len(line):
-            match = None
-            for t_regexp in self.token_regexps:
-                pattern, tag = t_regexp
-                regex = re.compile(pattern)
-                match = regex.match(line, pos)
-                if match:
-                    text = match.group(0)
-                    if tag:
-                        if tag.name.startswith("V"):
-                            token = Token(tag, text, self.curr_line)
-                        else:
-                            token = Token(tag, row=self.curr_line)
-                        tokens.append(token)
-
-                    break
-            if not match:
-                raise LexError(line[pos], self.curr_line)
+        while self.column < len(line):
+            token = self.find_token(line)
+            if token:
+                if token.type is not TokenType.T_IGNORE:
+                    tokens.append(token)
             else:
-                pos = match.end(0)
+                raise LexerException(line[self.column], self.row, self.column)
+        self.row += 1
         return tokens
+
+    def find_token(self, line):
+        token = self.get_token(line)
+        return token
+
+    def get_token(self, line):
+        try:
+            matched_token = self._find_matching_token(line)
+            return matched_token.get_token()
+        except LexerException:
+            print(LexerException)
+            exit(0)
+
+    def _find_matching_token(self, line):
+        for regex in self.regex2token:
+            match = regex.match(line, self.column)
+            if match:
+                self.column = match.end(0)
+                return MatchedToken(self.regex2token[regex], match.group(0))
+        raise LexerException(line[self.column], self.row, self.column)
 
 
 if __name__ == '__main__':
-    source = FileSource('test_files/testfile1.txt')
+    source = FileSource('test_files/testfile3.txt')
     lexer = Lexer(source)
+    print(lexer.get_tokens_from_next_line())
+    print(lexer.get_tokens_from_next_line())
     print(lexer.get_tokens_from_next_line())
     print(lexer.get_tokens_from_next_line())

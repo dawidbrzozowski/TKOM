@@ -1,11 +1,10 @@
-from lexer.token_type import TokenType
+from token.token_type import TokenType
 
 
 class Token:
-    def __init__(self, type_: TokenType, value=None, row=None):
+    def __init__(self, type_: TokenType, value=None):
         self.type = type_
         self.value = value
-        self.row = row
 
     def __repr__(self):
         if self.value:
@@ -17,4 +16,3 @@ class Token:
         if self.type == other.type and self.value == other.value:
             return True
         return False
-

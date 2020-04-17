@@ -5,6 +5,8 @@ class TokenType(Enum):
     """
     TokenTypes with no value.
     """
+
+    T_IGNORE = auto()
     # data types
     T_INT = auto()
     T_DOUBLE = auto()
@@ -70,3 +72,6 @@ class TokenType(Enum):
     VT_PHYS = auto()
     # variable names etc.
     VT_ID = auto()
+
+    def has_value_field(self):
+        return True if self.name.startswith("V") else False

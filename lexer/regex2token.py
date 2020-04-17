@@ -1,8 +1,8 @@
-from lexer.token_type import TokenType
+from token.token_type import TokenType
 
 regex2token = {
-    '\n': None,
-    r'[ \t]+': None,
+    r'\n': TokenType.T_IGNORE,
+    r'[ \t]+': TokenType.T_IGNORE,
     r'double(?![\w\d])': TokenType.T_DOUBLE,
     r'int(?![\w\d])': TokenType.T_INT,
     r'char(?![\w\d])': TokenType.T_CHAR,
