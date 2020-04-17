@@ -11,7 +11,7 @@ from errors.error import print_error_and_exit
 class LexerBase:
     def __init__(self, source=None):
         self.source = source
-        self.position = Position(0, 0)
+        self.position = Position(row=1, column=0)
         self.regex2token = compile_regex2token()
         self.all_tokens = None
         self.token_iterator = 0
@@ -43,7 +43,7 @@ class LexerBase:
         if line:
             tokens = self._lex_line(line)
         else:
-            tokens = [BaseToken(TokenType.T_EOT, self.position, self.position)]
+            tokens = [BaseToken(TokenType.T_EOT, self.position.copy(), self.position.copy())]
         return tokens
 
     def _lex_line(self, line):
