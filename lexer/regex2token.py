@@ -31,6 +31,7 @@ regex2token = {
     r'or(?![\w\d])': TokenType.T_OR,
     r'and(?![\w\d])': TokenType.T_AND,
     r'not(?![\w\d])': TokenType.T_NOT,
+    r'->': TokenType.T_ARROW,
     r',': TokenType.T_COMMA,
     r'\{': TokenType.T_LBRACKET,
     r'\}': TokenType.T_RBRACKET,

@@ -44,6 +44,7 @@ class TokenType(Enum):
     T_NOT = auto()
 
     # other
+    T_ARROW = auto()
     T_EOT = auto()
     T_IF = auto()
     T_ELSE = auto()
