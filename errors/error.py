@@ -1,8 +1,7 @@
-class LexerException(Exception):
-    def __init__(self, illegal_char, row: int, column:int):
-        self.illegal_char = illegal_char
-        self.row = row
-        self.column = column
+from lexer.token.tokens import Position
 
-    def __repr__(self):
-        return f'Token not found for: {self.illegal_char}. Row: {self.row}. Column: {self.column}'
+
+class LexerError(Exception):
+    def __init__(self, illegal_char, position: Position):
+        self.illegal_char = illegal_char
+        self.position = position

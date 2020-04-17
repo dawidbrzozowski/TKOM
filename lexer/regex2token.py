@@ -1,4 +1,4 @@
-from token.token_type import TokenType
+from lexer.token.token_type import TokenType
 
 regex2token = {
     r'\n': TokenType.T_IGNORE,
