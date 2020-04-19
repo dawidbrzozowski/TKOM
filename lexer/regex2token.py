@@ -52,6 +52,9 @@ regex2token = {
     r'>': TokenType.T_GREATER,
     r'!=': TokenType.T_NOT_EQ,
     r'DONE': TokenType.T_EOT,
+    # Changed 'unit' structure from initial documentation. Now it looks like |n/s*s|
+    r'\|((([A-Za-z]*\*)*[A-Za-z]+)|[A-Za-z]*)\/((([A-Za-z]*\*)*[A-Za-z]+)|[A-Za-z]*)\|': TokenType.VT_UNIT,
+    # VT_PHYS will be implemented in the Parser part.
     r'\d+\.\d+(?![\w])': TokenType.VT_DOUBLE,
     r'(0|[1-9]\d*)(?![\w])': TokenType.VT_INT,
     r'\'.\'(?![\w\d])': TokenType.VT_CHAR,
