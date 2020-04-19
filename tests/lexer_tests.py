@@ -83,12 +83,13 @@ class LexerTest(unittest.TestCase):
         self.assertEqual(expected, predicted)
 
     def test_const_values(self):
-        line = "'c' \"string\" 5 2.5"
+        line = "'c' \"string\" 5 2.5 |n*n/sm*q|"
         predicted = self.lexer._get_tokens_from_line(line)
         expected = [ValueToken(TokenType.VT_CHAR, "'c'"),
                     ValueToken(TokenType.VT_STRING, '"string"'),
                     ValueToken(TokenType.VT_INT, "5"),
-                    ValueToken(TokenType.VT_DOUBLE, "2.5")]
+                    ValueToken(TokenType.VT_DOUBLE, "2.5"),
+                    ValueToken(TokenType.VT_UNIT, "|n*n/sm*q|")]
         self.assertEqual(expected, predicted)
 
     def test_id(self):

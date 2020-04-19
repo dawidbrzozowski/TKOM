@@ -13,17 +13,8 @@ class TestRegex(unittest.TestCase):
             regex_compiled = re.compile(regex)
             self.regex2token_compiled[regex_compiled] = regex2token[regex]
 
-    def _find_matching_token_args(self, line):
-        for regex in self.regex2token_compiled:
-            match = regex.match(line)
-            if match:
-                token_type = self.regex2token_compiled[regex]
-                value = match.group(0)
-                return token_type, value
-        return None
-
     def find_token(self, line):
-        token_args = self._find_matching_token_args(line)
+        token_args = self._find_token_args(line)
         if not token_args:
             return None
         token_type, value = token_args
@@ -32,6 +23,15 @@ class TestRegex(unittest.TestCase):
         else:
             token = BaseToken(token_type)
         return token
+
+    def _find_token_args(self, line):
+        for regex in self.regex2token_compiled:
+            match = regex.match(line)
+            if match:
+                token_type = self.regex2token_compiled[regex]
+                value = match.group(0)
+                return token_type, value
+        return None
 
     def test_double_value(self):
         line = "2.5"
@@ -265,6 +265,24 @@ class TestRegex(unittest.TestCase):
         line = "function"
         token = self.find_token(line)
         expected = BaseToken(TokenType.T_FUNCTION)
+        self.assertEqual(expected, token)
+
+    def test_arrow(self):
+        line = "->"
+        token = self.find_token(line)
+        expected = BaseToken(TokenType.T_ARROW)
+        self.assertEqual(expected, token)
+
+    def test_unit(self):
+        line = "unit"
+        token = self.find_token(line)
+        expected = BaseToken(TokenType.T_UNIT)
+        self.assertEqual(expected, token)
+
+    def test_unit_value(self):
+        line = "|m/s*s|"
+        token = self.find_token(line)
+        expected = ValueToken(TokenType.VT_UNIT, "|m/s*s|")
         self.assertEqual(expected, token)
 
 
