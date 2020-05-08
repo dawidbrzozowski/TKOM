@@ -19,6 +19,7 @@ regex2token = {
     r'bool(?![\w\d])': TokenType.T_BOOL,
     r'string(?![\w\d])': TokenType.T_STRING,
     r'if(?![\w\d])': TokenType.T_IF,
+    r'elseif(?![\w\d])': TokenType.T_ELSEIF,
     r'else(?![\w\d])': TokenType.T_ELSE,
     r'true(?![\w\d])': TokenType.T_TRUE,
     r'false(?![\w\d])': TokenType.T_FALSE,

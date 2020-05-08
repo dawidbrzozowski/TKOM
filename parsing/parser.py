@@ -2,7 +2,8 @@ from errors.error import InvalidSyntaxError
 from lexer.lexer import FileLexer
 from lexer.token.token_type import TokenType
 from lexer.token.tokens import BaseToken
-from parsing.nodes import NumberNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode
+from parsing.nodes import NumberNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode, \
+    IfNode
 
 VARIABLES = (BaseToken(TokenType.T_STRING), BaseToken(TokenType.T_DOUBLE), BaseToken(TokenType.T_INT))
 
@@ -91,7 +92,50 @@ class Parser:
             else:
                 raise InvalidSyntaxError(self.current_token.pos_start.copy(), "Expected ')'")
 
+        elif token.type == TokenType.T_IF:
+            if_expr = self.perform_method(self.parse_if_expression)
+            return if_expr
+
         raise InvalidSyntaxError(token.pos_start.copy(), 'Expected int or double.')
+
+    def parse_if_expression(self):
+        if_cases = []
+        else_case = None
+        self.check_token_and_next(TokenType.T_IF, 'if')
+
+        condition = self.get_condition_with_parenthesis()
+        expr = self.get_expression_with_brackets()
+        if_cases.append((condition, expr))
+
+        while self.current_token.type == TokenType.T_ELSEIF:
+            self.next_token()
+            condition = self.get_condition_with_parenthesis()
+            expr = self.get_expression_with_brackets()
+            if_cases.append((condition, expr))
+
+        if self.current_token.type == TokenType.T_ELSE:
+            self.next_token()
+            else_case = self.get_expression_with_brackets()
+            if_cases.append((condition, expr))
+
+        return IfNode(if_cases, else_case)
+
+    def get_condition_with_parenthesis(self):
+        self.check_token_and_next(TokenType.T_LPARENT, '(')
+        condition = self.perform_method(self.parse_expression)
+        self.check_token_and_next(TokenType.T_RPARENT, ')')
+        return condition
+
+    def get_expression_with_brackets(self):
+        self.check_token_and_next(TokenType.T_LBRACKET, '{')
+        expr = self.perform_method(self.parse_expression)
+        self.check_token_and_next(TokenType.T_RBRACKET, '}')
+        return expr
+
+    def check_token_and_next(self, expected: TokenType, as_string):
+        if not self.current_token.type == expected:
+            raise InvalidSyntaxError(self.current_token.pos_start.copy(), f'Expected {as_string}')
+        self.next_token()
 
     def parse_binary_operation(self, parse_method, operations):
         left = self.perform_method(parse_method)

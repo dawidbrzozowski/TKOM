@@ -48,6 +48,7 @@ class TokenType(Enum):
     T_EOT = auto()
     T_IF = auto()
     T_ELSE = auto()
+    T_ELSEIF = auto()
     T_TRUE = auto()
     T_FALSE = auto()
     T_RETURN = auto()
