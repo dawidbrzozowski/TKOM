@@ -5,7 +5,6 @@ from lexer.source import FileSource, StdInSource
 from lexer.token.tokens import BaseToken, Position, create_token
 from lexer.token.token_type import TokenType
 from lexer.regex2token import compile_regex2token
-from errors.error import print_error_and_exit
 
 
 class LexerBase:
@@ -60,7 +59,7 @@ class LexerBase:
         try:
             return self._find_matching_token(line)
         except LexerError as e:
-            print_error_and_exit(e)
+            e.print_error_and_exit()
 
     def _find_matching_token(self, line):
         for regex in self.regex2token:
