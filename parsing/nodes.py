@@ -1,7 +1,27 @@
 from lexer.token.tokens import ValueToken
 
 
-class NumberNode:
+class IntNode:
+    def __init__(self, token):
+        self.token = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
+    def __repr__(self):
+        return f'{self.token}'
+
+
+class DoubleNode:
+    def __init__(self, token):
+        self.token = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
+    def __repr__(self):
+        return f'{self.token}'
+
+
+class StringNode:
     def __init__(self, token):
         self.token = token
         self.pos_start = token.pos_start
@@ -67,3 +87,38 @@ class IfNode:
         for case in self.cases:
             result += str(case)
         return result
+
+
+class WhileNode:
+    def __init__(self, condition_node, body_node):
+        self.condition_node = condition_node
+        self.body_node = body_node
+
+        self.pos_start = condition_node.pos_start
+        self.pos_end = condition_node.pos_end
+
+    def __repr__(self):
+        return f'({self.condition_node}, {self.body_node})'
+
+
+class FunctionDefinitionNode:
+    def __init__(self, function_name: ValueToken, argument_names, body):
+        self.function_name = function_name
+        self.argument_names = argument_names
+        self.body = body
+
+        self.pos_start = self.function_name.pos_start
+        self.pos_end = self.body.pos_end
+
+
+class CallFunctionNode:
+    def __init__(self, call_function, arguments):
+        self.call_function = call_function
+        self.arguments = arguments
+
+        self.pos_start = self.call_function.pos_start
+
+        if len(self.arguments):
+            self.pos_end = self.arguments[-1].pos_end
+        else:
+            self.pos_end = self.call_function.pos_end

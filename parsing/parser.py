@@ -2,8 +2,8 @@ from errors.error import InvalidSyntaxError
 from lexer.lexer import FileLexer
 from lexer.token.token_type import TokenType
 from lexer.token.tokens import BaseToken
-from parsing.nodes import NumberNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode, \
-    IfNode
+from parsing.nodes import IntNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode, \
+    IfNode, WhileNode, FunctionDefinitionNode, CallFunctionNode, StringNode, DoubleNode
 
 VARIABLES = (BaseToken(TokenType.T_STRING), BaseToken(TokenType.T_DOUBLE), BaseToken(TokenType.T_INT))
 
@@ -74,9 +74,17 @@ class Parser:
             factor = self.perform_method(self.parse_factor)
             return UnaryOperationNode(token, factor)
 
-        elif token.type in (TokenType.VT_INT, TokenType.VT_DOUBLE):
+        elif token.type == TokenType.VT_INT:
             self.next_token()
-            return NumberNode(token)
+            return IntNode(token)
+
+        elif token.type == TokenType.VT_DOUBLE:
+            self.next_token()
+            return DoubleNode(token)
+
+        elif token.type == TokenType.VT_STRING:
+            self.next_token()
+            return StringNode(token)
 
         elif token.type == TokenType.VT_ID:
             self.next_token()
@@ -93,10 +101,65 @@ class Parser:
                 raise InvalidSyntaxError(self.current_token.pos_start.copy(), "Expected ')'")
 
         elif token.type == TokenType.T_IF:
-            if_expr = self.perform_method(self.parse_if_expression)
-            return if_expr
+            if_expression = self.perform_method(self.parse_if_expression)
+            return if_expression
+
+        elif token.type == TokenType.T_WHILE:
+            while_expression = self.perform_method(self.parse_while_expression)
+            return while_expression
+
+        elif token.type == TokenType.T_FUNCTION:
+            function_expression = self.perform_method(self.parse_function_expression)
+            return function_expression
 
         raise InvalidSyntaxError(token.pos_start.copy(), 'Expected int or double.')
+
+    def parse_function_expression(self):
+        self.check_token_and_next(TokenType.T_FUNCTION, 'function')
+        if not self.current_token.type == TokenType.VT_ID:
+            raise InvalidSyntaxError(self.current_token.pos_start, 'Expected identifier')
+        function_name = self.current_token
+        self.next_token()
+        self.check_token_and_next(TokenType.T_LPARENT, '(')
+        arguments = []
+        if self.current_token.type == TokenType.VT_ID:
+            arguments.append(self.current_token)
+            self.next_token()
+
+            while self.current_token.type == TokenType.T_COMMA:
+                self.next_token()
+                if not self.current_token.type == TokenType.VT_ID:
+                    raise InvalidSyntaxError(self.current_token.pos_start, 'Expected identifier')
+                arguments.append(self.current_token)
+                self.next_token()
+        self.check_token_and_next(TokenType.T_RPARENT, ')')
+
+        self.check_token_and_next(TokenType.T_ARROW, '->')
+        self.check_token_and_next(TokenType.T_LBRACKET, '{')
+        expr = self.perform_method(self.parse_expression)
+        self.check_token_and_next(TokenType.T_RBRACKET, '}')
+        return FunctionDefinitionNode(function_name, arguments, expr)
+
+    def parse_call_function(self):
+        function_name = self.perform_method(self.parse_factor)
+        self.next_token()
+        arguments = []
+        self.check_token_and_next(TokenType.T_LPARENT, '(')
+        if self.current_token.type == TokenType.T_RPARENT:
+            self.next_token()
+        else:
+            arguments.append(self.perform_method(self.parse_expression))
+            while self.current_token.type == TokenType.T_COMMA:
+                self.next_token()
+                arguments.append(self.perform_method(self.parse_expression))
+            self.check_token_and_next(TokenType.T_RPARENT, ')')
+        return CallFunctionNode(function_name, arguments)
+
+    def parse_while_expression(self):
+        self.check_token_and_next(TokenType.T_WHILE, 'while')
+        condition = self.get_condition_with_parenthesis()
+        expression = self.get_expression_with_brackets()
+        return WhileNode(condition, expression)
 
     def parse_if_expression(self):
         if_cases = []
