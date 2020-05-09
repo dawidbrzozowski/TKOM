@@ -122,3 +122,17 @@ class CallFunctionNode:
             self.pos_end = self.arguments[-1].pos_end
         else:
             self.pos_end = self.call_function.pos_end
+
+
+class ListNode:
+    def __init__(self, element_nodes, pos_start, pos_end):
+        self.element_nodes = element_nodes
+
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __repr__(self):
+        result = ''
+        for element in self.element_nodes:
+            result += str(element)
+        return result

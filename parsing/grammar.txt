@@ -1,0 +1,35 @@
+Instructions            : Instruction (Instruction)*
+
+Instruction             : Expression SEMICOLON
+                        : If-Expression
+                        : While-Expression
+                        : Function-Definition
+
+If-Expression           : IF LPARENT Expression RPARENT LBRACKET Instructions RBRACKET
+                          (ELIF LPARENT Expression RPARENT LBRACKET Instructions RBRACKET)*
+                          (ELSE LBRACKET Instructions RBRACKET)*
+
+While-Expression        : WHILE Expression LPARENT Expression RPARENT LBRACKET Instructions RBRACKET
+
+Function-Definition     : FUNCTION IDENTIFIER LPARENT (IDENTIFIER SEMICOLON TYPE (COMMA IDENTIFIER)*)? RPARENT
+                        ARROW TYPE LBRACKET Instructions RBRACKET
+
+Expression              : TYPE IDENTIFIER EQ Expression
+                        : Comparator-Expression ((AND|OR) Comparator-Expression)*
+
+Comparator-Expression   : NOT Comparator-Expression
+                        : Arithmetic-Expression (COMPARATOR Arithmetic-Expression)*
+
+Arithmetic-Expression   : Term ((PLUS|MINUS) Term)*
+
+Term                    : Factor ((MUL|DIV) Factor)*
+
+Factor                  : (PLUS|MINUS) Factor
+                        : Function-Call-Or-Value
+
+Function-Call-Or-Value  : Atom (LPARENT (Expression (COMMA Expression)*) RPAREN)?
+
+Atom                    : INT_VALUE|DOUBLE_VALUE|STRING_VALUE|IDENTIFIER
+                        : LPARENT Expression RPARENT
+
+Type                    : (INT|DOUBLE|STRING)
