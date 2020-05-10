@@ -66,7 +66,8 @@ class VariableAccessNode:
 
 
 class VariableAssignmentNode:
-    def __init__(self, name: ValueToken, value: ValueToken):
+    def __init__(self, var_type, name: ValueToken, value: ValueToken):
+        self.type = var_type
         self.name = name
         self.value = value
 
@@ -74,7 +75,7 @@ class VariableAssignmentNode:
         self.pos_end = self.value.pos_end
 
     def __repr__(self):
-        return f'({self.name}: {self.value})'
+        return f'({self.type}: {self.name}: {self.value})'
 
 
 class IfNode:
@@ -132,16 +133,16 @@ class CallFunctionNode:
             self.pos_end = self.call_function.pos_end
 
 
-class ListNode:
-    def __init__(self, element_nodes, pos_start, pos_end):
-        self.element_nodes = element_nodes
+class StatementsNode:
+    def __init__(self, statements, pos_start, pos_end):
+        self.statements = statements
 
         self.pos_start = pos_start
         self.pos_end = pos_end
 
     def __repr__(self):
         result = ''
-        for element in self.element_nodes:
+        for element in self.statements:
             result += str(element)
         return result
 
