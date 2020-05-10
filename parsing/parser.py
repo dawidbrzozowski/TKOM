@@ -1,11 +1,11 @@
 from errors.error import InvalidSyntaxError
 from lexer.lexer import FileLexer
 from lexer.token.token_type import TokenType
-from lexer.token.tokens import BaseToken
-from parsing.nodes import IntNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode, \
-    IfNode, WhileNode, FunctionDefinitionNode, CallFunctionNode, StringNode, DoubleNode, ListNode, ReturnNode
+from parsing.nodes import IntNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VariableAccessNode, \
+    IfNode, WhileNode, FunctionDefinitionNode, CallFunctionNode, StringNode, DoubleNode, ListNode, ReturnNode, TypeNode, \
+    FunctionArgumentNode
 
-VARIABLES = (BaseToken(TokenType.T_STRING), BaseToken(TokenType.T_DOUBLE), BaseToken(TokenType.T_INT))
+VARIABLE_TYPES = (TokenType.T_STRING, TokenType.T_DOUBLE, TokenType.T_INT)
 
 COMPARISONS = (TokenType.T_EQ, TokenType.T_NOT_EQ, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ, TokenType.T_LESS,
                TokenType.T_LESS_OR_EQ)
@@ -18,7 +18,7 @@ class Parser:
         self.next_token()
 
     def parse(self):
-        result = self.statements([TokenType.T_EOT])
+        result = self.statements(end_tokens=[TokenType.T_EOT])
         return result
 
     def next_token(self):
@@ -37,10 +37,6 @@ class Parser:
         statements = []
         pos_start = self.current_token.pos_start.copy()
 
-        # skip new lines at the start
-        while self.current_token.type == TokenType.T_SEMICOLON:
-            self.next_token()
-
         # There must be at least 1 statement
         statement = self.perform_method(self.parse_statement)
         statements.append(statement)
@@ -56,15 +52,15 @@ class Parser:
 
     def parse_statement(self):
         if self.current_token.type == TokenType.T_IF:
-            if_expression = self.perform_method(self.parse_if_expression)
+            if_expression = self.parse_if_expression()
             return if_expression
 
         elif self.current_token.type == TokenType.T_WHILE:
-            while_expression = self.perform_method(self.parse_while_expression)
+            while_expression = self.parse_while_expression()
             return while_expression
 
         elif self.current_token.type == TokenType.T_FUNCTION:
-            function_expression = self.perform_method(self.parse_function_expression)
+            function_expression = self.parse_function_expression()
             return function_expression
 
         elif self.current_token.type == TokenType.T_RETURN:
@@ -87,7 +83,7 @@ class Parser:
         return ReturnNode(expression, pos_start, pos_end)
 
     def parse_expression(self):
-        if self.current_token in VARIABLES:
+        if self.current_token.type in VARIABLE_TYPES:
             self.next_token()
             if self.current_token.type != TokenType.VT_ID:
                 raise InvalidSyntaxError(self.current_token.pos_start.copy(), 'Expected identifier')
@@ -98,7 +94,7 @@ class Parser:
                 raise InvalidSyntaxError(self.current_token.pos_start.copy(), 'Expected =')
 
             self.next_token()
-            expr = self.perform_method(self.parse_expression)
+            expr = self.parse_expression()
             return VariableAssignmentNode(variable_name, expr)
 
         return self.parse_binary_operation(self.parse_comparison_expression, (TokenType.T_AND, TokenType.T_OR))
@@ -108,7 +104,7 @@ class Parser:
             operation = self.current_token
             self.next_token()
 
-            comp_node = self.perform_method(self.parse_comparison_expression)
+            comp_node = self.parse_comparison_expression()
             return UnaryOperationNode(operation, comp_node)
 
         return self.parse_binary_operation(self.parse_arithmetic_expression, COMPARISONS)
@@ -124,7 +120,7 @@ class Parser:
 
         if token.type in (TokenType.T_PLUS, TokenType.T_MINUS):
             self.next_token()
-            factor = self.perform_method(self.parse_factor)
+            factor = self.parse_factor()
             return UnaryOperationNode(token, factor)
 
         elif token.type == TokenType.VT_INT:
@@ -141,11 +137,11 @@ class Parser:
 
         elif token.type == TokenType.VT_ID:
             self.next_token()
-            return VarAccessNode(token)
+            return VariableAccessNode(token)
 
         elif token.type == TokenType.T_LPARENT:
             self.next_token()
-            expression = self.perform_method(self.parse_expression)
+            expression = self.parse_expression()
 
             if self.current_token.type == TokenType.T_RPARENT:
                 self.next_token()
@@ -164,35 +160,53 @@ class Parser:
         self.check_token_and_next(TokenType.T_LPARENT, '(')
         arguments = []
         if self.current_token.type == TokenType.VT_ID:
-            arguments.append(self.current_token)
+            argument = self.parse_function_argument()
             self.next_token()
-
+            arguments.append(argument)
             while self.current_token.type == TokenType.T_COMMA:
                 self.next_token()
                 if not self.current_token.type == TokenType.VT_ID:
                     raise InvalidSyntaxError(self.current_token.pos_start, 'Expected identifier')
-                arguments.append(self.current_token)
+                argument = self.parse_function_argument()
+                arguments.append(argument)
                 self.next_token()
         self.check_token_and_next(TokenType.T_RPARENT, ')')
 
         self.check_token_and_next(TokenType.T_ARROW, '->')
+
+        return_type = self.parse_type(include_void=True)
+        self.next_token()
+
         self.check_token_and_next(TokenType.T_LBRACKET, '{')
         expressions = self.statements([TokenType.T_RBRACKET])
         self.check_token_and_next(TokenType.T_RBRACKET, '}')
-        return FunctionDefinitionNode(function_name, arguments, expressions)
+        return FunctionDefinitionNode(function_name, arguments, expressions, return_type)
+
+    def parse_function_argument(self):
+        argument_name = self.current_token
+        self.next_token()
+        self.check_token_and_next(TokenType.T_COLON, ':')
+        argument_type = self.parse_type()
+        return FunctionArgumentNode(argument_name, argument_type)
+
+    def parse_type(self, include_void=False):
+        variable_types = VARIABLE_TYPES or TokenType.T_VOID if include_void else VARIABLE_TYPES
+        if self.current_token.type not in variable_types:
+            raise InvalidSyntaxError(self.current_token.pos_start, 'Expected int, double or string')
+        return TypeNode(self.current_token)
 
     def parse_call_function(self):
-        function_name = self.perform_method(self.parse_factor)
+        function_name = self.parse_factor()
         self.next_token()
         arguments = []
         self.check_token_and_next(TokenType.T_LPARENT, '(')
         if self.current_token.type == TokenType.T_RPARENT:
             self.next_token()
         else:
-            arguments.append(self.perform_method(self.parse_expression))
+            arguments.append(self.parse_expression())
             while self.current_token.type == TokenType.T_COMMA:
                 self.next_token()
-                arguments.append(self.perform_method(self.parse_expression))
+                arguments.append(self.parse_expression())
             self.check_token_and_next(TokenType.T_RPARENT, ')')
         return CallFunctionNode(function_name, arguments)
 
@@ -221,13 +235,12 @@ class Parser:
             self.check_token_and_next(TokenType.T_LBRACKET, '{')
             expressions = self.statements([TokenType.T_RBRACKET])
             if_cases.append((condition, expressions))
+            self.next_token()
 
-        self.next_token()
         if self.current_token.type == TokenType.T_ELSE:
             self.next_token()
             self.check_token_and_next(TokenType.T_LBRACKET, '{')
             else_case = self.statements([TokenType.T_RBRACKET])
-            if_cases.append((condition, else_case))
 
         self.next_token()
 
@@ -235,13 +248,13 @@ class Parser:
 
     def get_condition_with_parenthesis(self):
         self.check_token_and_next(TokenType.T_LPARENT, '(')
-        condition = self.perform_method(self.parse_expression)
+        condition = self.parse_expression()
         self.check_token_and_next(TokenType.T_RPARENT, ')')
         return condition
 
     def get_expression_with_brackets(self):
         self.check_token_and_next(TokenType.T_LBRACKET, '{')
-        expr = self.perform_method(self.parse_expression)
+        expr = self.parse_expression()
         self.check_token_and_next(TokenType.T_RBRACKET, '}')
         return expr
 
@@ -251,12 +264,12 @@ class Parser:
         self.next_token()
 
     def parse_binary_operation(self, parse_method, operations):
-        left = self.perform_method(parse_method)
+        left = parse_method()
 
         while self.current_token.type in operations:
             operation = self.current_token
             self.next_token()
-            right = self.perform_method(parse_method)
+            right = parse_method()
             left = BinaryOperationNode(left, operation, right)
         return left
 

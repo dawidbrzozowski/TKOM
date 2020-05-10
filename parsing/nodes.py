@@ -54,12 +54,15 @@ class UnaryOperationNode:
         return f'({self.operation}, {self.node})'
 
 
-class VarAccessNode:
+class VariableAccessNode:
     def __init__(self, name: ValueToken):
         self.name = name
 
         self.pos_start = self.name.pos_start
         self.pos_end = self.name.pos_end
+
+    def __repr__(self):
+        return f'{self.name}'
 
 
 class VariableAssignmentNode:
@@ -83,10 +86,11 @@ class IfNode:
         self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
 
     def __repr__(self):
-        result = ''
+        result = '('
         for case in self.cases:
             result += str(case)
-        return result
+        result += str(self.else_case)
+        return result + ')'
 
 
 class WhileNode:
@@ -102,13 +106,17 @@ class WhileNode:
 
 
 class FunctionDefinitionNode:
-    def __init__(self, function_name: ValueToken, argument_names, body):
+    def __init__(self, function_name: ValueToken, argument_names, body, return_type):
         self.function_name = function_name
         self.argument_names = argument_names
         self.body = body
+        self.return_type = return_type
 
         self.pos_start = self.function_name.pos_start
         self.pos_end = self.body.pos_end
+
+    def __repr__(self):
+        return f'({self.function_name}: {self.return_type} : {self.argument_names} : {self.body})'
 
 
 class CallFunctionNode:
@@ -149,3 +157,25 @@ class ReturnNode:
             return f'<Return> {self.node}'
         else:
             return '<Return>'
+
+
+class TypeNode:
+    def __init__(self, var_type):
+        self.type = var_type
+        self.pos_start = var_type.pos_start
+        self.pos_end = var_type.pos_end
+
+    def __repr__(self):
+        return f'{self.type}'
+
+
+class FunctionArgumentNode:
+    def __init__(self, argument_name, argument_type):
+        self.name = argument_name
+        self.type = argument_type
+
+        self.pos_start = argument_name.pos_start
+        self.pos_end = argument_type.pos_end
+
+    def __repr__(self):
+        return f'({self.name}:{self.type})'
