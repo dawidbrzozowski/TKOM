@@ -144,7 +144,7 @@ class StatementsNode:
         self.pos_end = pos_end
 
     def __repr__(self):
-        result = '(' + ', '.join(str(statement) for statement in self.statements) + ')'
+        result = '(' + '\n'.join(str(statement) for statement in self.statements) + ')'
         return result
 
 

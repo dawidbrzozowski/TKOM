@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 from errors.error import InvalidSyntaxError
 from lexer.lexer import FileLexer, StdInLexer
 from lexer.token.token_type import TokenType
@@ -337,8 +339,15 @@ class Parser:
         return result
 
 
+def main(args):
+    lexer = StdInLexer() if args.source_type == 'stdin' else FileLexer(args.file_path)
+    parser = Parser(lexer)
+    print(parser.parse())
+
+
 if __name__ == '__main__':
-    file_lexer = FileLexer('test_files/presentation_test.txt')
-    parser = Parser(file_lexer)
-    ast = parser.parse()
-    print(ast)
+    parser = ArgumentParser()
+    parser.add_argument('--file_path', type=str, default='test_files/presentation_test.txt', required=False)
+    parser.add_argument('--source_type', type=str, choices=['stdin', 'file'], default='file')
+    args = parser.parse_args()
+    main(args)
