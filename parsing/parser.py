@@ -82,13 +82,16 @@ class Parser:
         return ReturnNode(expression, pos_start, pos_end)
 
     def parse_expression(self):
-        if self.current_token.type in VARIABLE_TYPES:
+        if self.current_token.type in VARIABLE_TYPES or (
+                self.current_token.type == TokenType.VT_ID and self.show_upcoming_token().type == TokenType.T_ASSIGN):
             return self.parse_assignment()
 
         return self.parse_binary_operation(self.parse_comparison_expression, (TokenType.T_AND, TokenType.T_OR))
 
     def parse_assignment(self):
-        var_type = self.parse_type()
+        var_type = None
+        if self.current_token.type in VARIABLE_TYPES:
+            var_type = self.parse_type()
         variable_name = self.get_token_if_type_and_next(TokenType.VT_ID)
         self.check_token_and_next(TokenType.T_ASSIGN)
         expression = self.parse_expression()
@@ -174,8 +177,9 @@ class Parser:
         variable_types = VARIABLE_TYPES or TokenType.T_VOID if include_void else VARIABLE_TYPES
         if self.current_token.type not in variable_types:
             raise InvalidSyntaxError(self.current_token.pos_start, 'Expected int, double or string')
+        token = self.current_token
         self.next_token()
-        return TypeNode(self.current_token)
+        return TypeNode(token)
 
     def is_current_token_type(self, token_type):
         result = False

@@ -1,5 +1,5 @@
 from lexer.token.token_type import TokenType
-
+from lexer.token.token_type_repr import token_type_repr
 
 class Position:
     def __init__(self, row, column):
@@ -25,7 +25,7 @@ class BaseToken:
     # def __repr__(self):
     #     return f'TOKEN (Type: {self.type} {self.print_location()})'
     def __repr__(self):
-        return f'{self.type}'
+        return f'{token_type_repr.get(self.type)}'
 
     def __eq__(self, other):
         return True if self.type == other.type else False
@@ -45,7 +45,7 @@ class ValueToken(BaseToken):
     #     return f'TOKEN (Type: {self.type} Value: {self.value} {self.print_location()})'
 
     def __repr__(self):
-        return f'{self.type}:{self.value}'
+        return f'{token_type_repr.get(self.type)}:{self.value}'
 
     def __eq__(self, other):
         if self.type == other.type and self.value == other.value:

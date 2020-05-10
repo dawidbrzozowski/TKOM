@@ -40,7 +40,7 @@ class BinaryOperationNode:
         self.pos_end = right.pos_end
 
     def __repr__(self):
-        return f'({self.left}, {self.operation}, {self.right})'
+        return f'({self.left}{self.operation}{self.right})'
 
 
 class UnaryOperationNode:
@@ -51,7 +51,7 @@ class UnaryOperationNode:
         self.pos_end = node.pos_end
 
     def __repr__(self):
-        return f'({self.operation}, {self.node})'
+        return f'({self.operation} {self.node})'
 
 
 class VariableAccessNode:
@@ -75,7 +75,7 @@ class VariableAssignmentNode:
         self.pos_end = self.value.pos_end
 
     def __repr__(self):
-        return f'({self.type}: {self.name}: {self.value})'
+        return f'(Assignment: {self.type} {self.name}={self.value})'
 
 
 class IfNode:
@@ -87,7 +87,7 @@ class IfNode:
         self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
 
     def __repr__(self):
-        result = '('
+        result = '(If:'
         for case in self.cases:
             result += str(case)
         result += str(self.else_case)
@@ -103,7 +103,7 @@ class WhileNode:
         self.pos_end = condition_node.pos_end
 
     def __repr__(self):
-        return f'({self.condition_node}, {self.body_node})'
+        return f'(While: {self.condition_node} Do:{self.body_node})'
 
 
 class FunctionDefinitionNode:
@@ -117,7 +117,7 @@ class FunctionDefinitionNode:
         self.pos_end = self.body.pos_end
 
     def __repr__(self):
-        return f'({self.function_name}: {self.return_type} : {self.argument_names} : {self.body})'
+        return f'(Function:{self.function_name}->{self.return_type} Args:{self.argument_names} Body:{self.body})'
 
 
 class CallFunctionNode:
@@ -133,7 +133,7 @@ class CallFunctionNode:
             self.pos_end = self.function_name.pos_end
 
     def __repr__(self):
-        return f'({self.function_name}: {self.arguments})'
+        return f'(Call: {self.function_name} Args:{self.arguments})'
 
 
 class StatementsNode:

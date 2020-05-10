@@ -22,7 +22,7 @@ Return-Type             : Type | VOID
 Expression              : Assignment
                         : Comparator-Expression ((AND|OR) Comparator-Expression)*
 
-Assignment              : TYPE IDENTIFIER EQ Expression
+Assignment              : TYPE? IDENTIFIER ASSIGN Expression
 
 Comparator-Expression   : NOT Comparator-Expression
                         : Arithmetic-Expression (Comparator Arithmetic-Expression)*
@@ -32,13 +32,20 @@ Arithmetic-Expression   : Term ((PLUS|MINUS) Term)*
 Term                    : Factor ((MUL|DIV) Factor)*
 
 Factor                  : (PLUS|MINUS) Factor
-                        : Function-Call-Or-Value
+                        : Atom
 
-Function-Call-Or-Value  : Atom (LPARENT (Expression (COMMA Expression)*) RPAREN)?
-
-Atom                    : INT_VALUE|DOUBLE_VALUE|STRING_VALUE|IDENTIFIER
+Atom                    : Value|IDENTIFIER
                         : LPARENT Expression RPARENT
+                        : Function-Call
 
-Type                    : (INT|DOUBLE|STRING)
+Value                   :INT_VALUE|DOUBLE_VALUE|STRING_VALUE|Phys-Value|Unit-Value
 
-Comparator              : (EQ|NEQ|LESS|GREATER|LEQ|GEQ)
+Unit-Value              :
+
+Phys-Value              :
+
+Function-Call           : IDENTIFIER LPARENT (Expression (COMMA Expression)*) RPAREN
+
+Type                    : (INT|DOUBLE|STRING|PHYS|UNIT)
+
+Comparator              : (EQ|NOT_EQ|LESS|GREATER|LESS_OR_EQ|GREATER_OR_EQ)
