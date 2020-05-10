@@ -23,6 +23,10 @@ class LexerBase:
             return token
         return None
 
+    def show_prev_token_location(self):
+        if self.token_iterator > 1:
+            return self.all_tokens[self.token_iterator-2].pos_end
+
     def next_token_exists(self):
         return True if self.token_iterator < len(self.all_tokens) else False
 

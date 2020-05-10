@@ -20,11 +20,11 @@ Function-Argument       : IDENTIFIER SEMICOLON TYPE
 Return-Type             : Type | VOID
 
 Expression              : Assignment
-                        : Comparator-Expression ((AND|OR) Comparator-Expression)*
+                        : Comparison-Expression ((AND|OR) Comparison-Expression)*
 
 Assignment              : TYPE? IDENTIFIER ASSIGN Expression
 
-Comparator-Expression   : NOT Comparator-Expression
+Comparison-Expression   : NOT Comparison-Expression
                         : Arithmetic-Expression (Comparator Arithmetic-Expression)*
 
 Arithmetic-Expression   : Term ((PLUS|MINUS) Term)*
