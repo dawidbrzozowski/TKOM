@@ -37,22 +37,31 @@ class Parser:
         return StatementsNode(statements, pos_start, pos_end)
 
     def _parse_statement(self):
-        if self.current_token.type == TokenType.T_IF:
+        token = self.current_token
+        if token.type == TokenType.T_IF:
             if_expression = self._parse_if_expression()
             return if_expression
 
-        elif self.current_token.type == TokenType.T_WHILE:
+        elif token.type == TokenType.T_WHILE:
             while_expression = self._parse_while_expression()
             return while_expression
 
-        elif self.current_token.type == TokenType.T_FUNCTION:
+        elif token.type == TokenType.T_FUNCTION:
             function_expression = self._parse_function_definition()
             return function_expression
 
-        elif self.current_token.type == TokenType.T_RETURN:
+        elif token.type == TokenType.T_RETURN:
             return_expression = self._parse_return()
             self._check_token_and_next(TokenType.T_SEMICOLON)
             return return_expression
+
+        elif self._is_current_token_type(TokenType.T_BREAK):
+            self._check_token_and_next(TokenType.T_SEMICOLON)
+            return BreakNode(token.pos_start, self.current_token.pos_start)
+
+        elif self._is_current_token_type(TokenType.T_CONTINUE):
+            self._check_token_and_next(TokenType.T_SEMICOLON)
+            return ContinueNode(token.pos_start, self.current_token.pos_start)
 
         expression = self._parse_expression()
         self._check_token_and_next(TokenType.T_SEMICOLON)
@@ -329,7 +338,7 @@ class Parser:
 
 
 if __name__ == '__main__':
-    file_lexer = StdInLexer()
+    file_lexer = FileLexer('test_files/presentation_test.txt')
     parser = Parser(file_lexer)
     ast = parser.parse()
     print(ast)

@@ -26,6 +26,8 @@ regex2token = {
     r'function(?![\w\d])': TokenType.T_FUNCTION,
     r'void(?![\w\d])': TokenType.T_VOID,
     r'return(?![\w\d])': TokenType.T_RETURN,
+    r'break(?![\w\d])': TokenType.T_BREAK,
+    r'continue(?![\w\d])': TokenType.T_CONTINUE,
     r'phys(?![\w\d])': TokenType.T_PHYS,
     r'unit(?![\w\d])': TokenType.T_UNIT,
     r'while(?![\w\d])': TokenType.T_WHILE,

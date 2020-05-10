@@ -48,6 +48,8 @@ token_type_repr = {
     TokenType.T_TRUE: 'True',
     TokenType.T_FALSE: 'False',
     TokenType.T_RETURN: 'return',
+    TokenType.T_BREAK: 'break',
+    TokenType.T_CONTINUE: 'continue',
     TokenType.T_WHILE: 'while',
     TokenType.T_ASSIGN: '=',
     TokenType.T_VOID: 'void',

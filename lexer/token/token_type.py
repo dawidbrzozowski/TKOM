@@ -58,6 +58,8 @@ class TokenType(Enum):
     T_ASSIGN = auto()
     T_VOID = auto()
     T_FUNCTION = auto()
+    T_BREAK = auto()
+    T_CONTINUE = auto()
 
     """
     TokenTypes that must have a value

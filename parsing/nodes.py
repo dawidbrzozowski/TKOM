@@ -144,9 +144,7 @@ class StatementsNode:
         self.pos_end = pos_end
 
     def __repr__(self):
-        result = ''
-        for element in self.statements:
-            result += str(element)
+        result = '(' + ', '.join(str(statement) for statement in self.statements) + ')'
         return result
 
 
@@ -206,3 +204,21 @@ class PhysNode:
 
     def __repr__(self):
         return f'(Phys: {self.value}*{self.unit})'
+
+
+class BreakNode:
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __repr__(self):
+        return 'Break'
+
+
+class ContinueNode:
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __repr__(self):
+        return 'Continue'
