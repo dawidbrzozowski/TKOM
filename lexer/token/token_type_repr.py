@@ -17,6 +17,8 @@ token_type_repr = {
     TokenType.T_RBRACKET: '}',
     TokenType.T_LPARENT: '(',
     TokenType.T_RPARENT: ')',
+    TokenType.T_VERTICAL_BAR: '|',
+    TokenType.T_AMPERSAND: '&',
 
     # math operations
     TokenType.T_PLUS: '+',
@@ -58,8 +60,6 @@ token_type_repr = {
     TokenType.VT_STRING: 'string value',
     TokenType.VT_DOUBLE: 'double value',
     TokenType.VT_INT: 'int value',
-    TokenType.VT_UNIT: 'unit value',
-    TokenType.VT_PHYS: 'phys value',
     # variable names etc.
     TokenType.VT_ID: 'identifier',
 }

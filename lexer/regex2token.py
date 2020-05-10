@@ -33,6 +33,8 @@ regex2token = {
     r'and(?![\w\d])': TokenType.T_AND,
     r'not(?![\w\d])': TokenType.T_NOT,
     r'->': TokenType.T_ARROW,
+    r'\|': TokenType.T_VERTICAL_BAR,
+    r'&': TokenType.T_AMPERSAND,
     r',': TokenType.T_COMMA,
     r'\{': TokenType.T_LBRACKET,
     r'\}': TokenType.T_RBRACKET,
@@ -53,9 +55,6 @@ regex2token = {
     r'>': TokenType.T_GREATER,
     r'!=': TokenType.T_NOT_EQ,
     r'DONE': TokenType.T_EOT,
-    # Changed 'unit' structure from initial documentation. Now it looks like |n/s*s|
-    r'\|((([A-Za-z]*\*)*[A-Za-z]+)|[A-Za-z]*)\/((([A-Za-z]*\*)*[A-Za-z]+)|[A-Za-z]*)\|': TokenType.VT_UNIT,
-    # VT_PHYS will be implemented in the Parser part.
     r'\d+\.\d+(?![\w])': TokenType.VT_DOUBLE,
     r'(0|[1-9]\d*)(?![\w])': TokenType.VT_INT,
     r'\'.\'(?![\w\d])': TokenType.VT_CHAR,

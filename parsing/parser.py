@@ -4,10 +4,12 @@ from lexer.token.token_type import TokenType
 from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
 
-VARIABLE_TYPES = (TokenType.T_STRING, TokenType.T_DOUBLE, TokenType.T_INT)
+VARIABLE_TYPES = (TokenType.T_STRING, TokenType.T_DOUBLE, TokenType.T_INT, TokenType.T_PHYS, TokenType.T_UNIT)
 
 COMPARISONS = (TokenType.T_EQ, TokenType.T_NOT_EQ, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ, TokenType.T_LESS,
                TokenType.T_LESS_OR_EQ)
+
+NUMERICAL_VALUES = [TokenType.VT_INT, TokenType.VT_DOUBLE]
 
 
 class Parser:
@@ -121,19 +123,12 @@ class Parser:
             factor = self.parse_factor()
             return UnaryOperationNode(token, factor)
 
-        elif token.type == TokenType.VT_INT:
-            self.next_token()
-            return IntNode(token)
+        return self.parse_atom()
 
-        elif token.type == TokenType.VT_DOUBLE:
-            self.next_token()
-            return DoubleNode(token)
+    def parse_atom(self):
+        token = self.current_token
 
-        elif token.type == TokenType.VT_STRING:
-            self.next_token()
-            return StringNode(token)
-
-        elif token.type == TokenType.VT_ID:
+        if token.type == TokenType.VT_ID:
             if self.show_upcoming_token().type == TokenType.T_LPARENT:
                 return self.parse_call_function()
             self.next_token()
@@ -144,6 +139,80 @@ class Parser:
             expression = self.parse_expression()
             self.check_token_and_next(TokenType.T_RPARENT)
             return expression
+
+        return self.parse_value()
+
+    def parse_value(self):
+        token = self.current_token
+
+        if token.type == TokenType.VT_STRING:
+            self.next_token()
+            return StringNode(token)
+
+        elif token.type in NUMERICAL_VALUES or token.type == TokenType.VT_ID:
+            if self.show_upcoming_token().type == TokenType.T_AMPERSAND:
+                return self.parse_phys_value()
+
+        elif token.type == TokenType.T_VERTICAL_BAR:
+            return self.parse_unit_value()
+
+        return self.parse_numerical_value()
+
+    def parse_unit_value(self):
+        pos_start = self.current_token.pos_start
+        pos_end = pos_start
+        self.check_token_and_next(TokenType.T_VERTICAL_BAR)
+        nominator = self.get_nominator()
+        if len(nominator):
+            pos_end = nominator[-1].pos_end
+        denominator = []
+        if self.is_current_token_type(TokenType.T_DIV):
+            denominator = self.get_denominator()
+        if len(denominator):
+            pos_end = denominator[-1].pos_end
+        self.check_token_and_next(TokenType.T_VERTICAL_BAR)
+        return UnitNode(nominator, denominator, pos_start, pos_end)
+
+    def get_nominator(self):
+        nominator = []
+        if self.current_token.type == TokenType.VT_ID:
+            nominator.append(self.current_token)
+            self.next_token()
+            while self.is_current_token_type(TokenType.T_MUL):
+                identifier = self.get_token_if_type_and_next(TokenType.VT_ID)
+                nominator.append(identifier)
+        else:
+            if not isinstance(self.current_token, ValueToken) and \
+                    self.current_token.type == TokenType.VT_INT and self.current_token.value == 1:
+                raise InvalidSyntaxError(self.current_token.pos_start, 'Expected identifier or 1')
+            self.next_token()
+        return nominator
+
+    def get_denominator(self):
+        denominator = []
+        identifier = self.get_token_if_type_and_next(TokenType.VT_ID)
+        denominator.append(identifier)
+        while self.is_current_token_type(TokenType.T_MUL):
+            identifier = self.get_token_if_type_and_next(TokenType.VT_ID)
+            denominator.append(identifier)
+        return denominator
+
+    def parse_phys_value(self):
+        value = self.current_token
+        self.next_token()
+        self.check_token_and_next(TokenType.T_AMPERSAND)
+        unit = self.parse_unit_value()
+        return PhysNode(value, unit)
+
+    def parse_numerical_value(self):
+        token = self.current_token
+        if token.type == TokenType.VT_INT:
+            self.next_token()
+            return IntNode(token)
+
+        elif token.type == TokenType.VT_DOUBLE:
+            self.next_token()
+            return DoubleNode(token)
 
         raise InvalidSyntaxError(token.pos_start.copy(), 'Expected instruction.')
 

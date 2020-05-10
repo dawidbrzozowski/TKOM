@@ -1,6 +1,6 @@
-Instructions            : Instruction (Instruction)*
+Statements              : Instruction (Instruction)*
 
-Instruction             : Expression SEMICOLON
+Statement               : Expression SEMICOLON
                         : RETURN Expression?
                         : If-Expression
                         : While-Expression
@@ -34,15 +34,22 @@ Term                    : Factor ((MUL|DIV) Factor)*
 Factor                  : (PLUS|MINUS) Factor
                         : Atom
 
-Atom                    : Value|IDENTIFIER
-                        : LPARENT Expression RPARENT
+Atom                    : Value
+                        : IDENTIFIER
                         : Function-Call
+                        : LPARENT Expression RPARENT
 
-Value                   :INT_VALUE|DOUBLE_VALUE|STRING_VALUE|Phys-Value|Unit-Value
+Value                   : Numerical-Value|STRING_VALUE|Phys-Value|Unit-Value
 
-Unit-Value              :
+Numerical-Value         : INT_VALUE|DOUBLE_VALUE
 
-Phys-Value              :
+Phys-Value              : (Numerical-Value|IDENTIFIER) AMPERSAND Unit-Value
+
+Unit-Value              : VERTICAL-BAR Nominator (DIV Denominator)? VERTICAL-BAR
+
+Nominator               : (IDENTIFIER (MUL IDENTIFIER)* ) | 1
+
+Denominator             : IDENTIFIER (MUL IDENTIFIER)*
 
 Function-Call           : IDENTIFIER LPARENT (Expression (COMMA Expression)*) RPAREN
 

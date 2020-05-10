@@ -183,3 +183,26 @@ class FunctionArgumentNode:
 
     def __repr__(self):
         return f'({self.name}:{self.type})'
+
+
+class UnitNode:
+    def __init__(self, nominator, denominator, pos_start, pos_end):
+        self.nominator = nominator
+        self.denominator = denominator
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __repr__(self):
+        return f'(Unit: {self.nominator}/{self.denominator})'
+
+
+class PhysNode:
+    def __init__(self, value, unit):
+        self.value = value
+        self.unit = unit
+
+        self.pos_start = value.pos_start
+        self.pos_end = unit.pos_end
+
+    def __repr__(self):
+        return f'(Phys: {self.value}*{self.unit})'
