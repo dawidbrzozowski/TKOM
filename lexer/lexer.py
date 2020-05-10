@@ -15,10 +15,11 @@ class LexerBase:
         self.all_tokens = None
         self.token_iterator = 0
 
-    def get_next_token(self):
+    def get_next_token(self, move_index=True):
         if self.token_iterator < len(self.all_tokens):
             token = self.all_tokens[self.token_iterator]
-            self.token_iterator += 1
+            if move_index:
+                self.token_iterator += 1
             return token
         return None
 

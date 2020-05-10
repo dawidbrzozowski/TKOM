@@ -24,6 +24,9 @@ class Parser:
         self.current_token = self.lexer.get_next_token()
         return self.current_token
 
+    def show_upcoming_token(self):
+        return self.lexer.get_next_token(move_index=False)
+
     def perform_method(self, method):
         result = None
         try:
@@ -128,6 +131,8 @@ class Parser:
             return StringNode(token)
 
         elif token.type == TokenType.VT_ID:
+            if self.show_upcoming_token().type == TokenType.T_LPARENT:
+                return self.parse_call_function()
             self.next_token()
             return VariableAccessNode(token)
 
@@ -180,16 +185,13 @@ class Parser:
         return result
 
     def parse_call_function(self):
-        function_name = self.parse_factor()
-        self.next_token()
+        function_name = self.get_token_if_type_and_next(TokenType.VT_ID)
         arguments = []
         self.check_token_and_next(TokenType.T_LPARENT)
-        if self.current_token.type == TokenType.T_RPARENT:
-            self.next_token()
-        else:
+
+        if not self.is_current_token_type(TokenType.T_RPARENT):
             arguments.append(self.parse_expression())
-            while self.current_token.type == TokenType.T_COMMA:
-                self.next_token()
+            while self.is_current_token_type(TokenType.T_COMMA):
                 arguments.append(self.parse_expression())
             self.check_token_and_next(TokenType.T_RPARENT)
         return CallFunctionNode(function_name, arguments)

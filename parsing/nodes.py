@@ -121,16 +121,19 @@ class FunctionDefinitionNode:
 
 
 class CallFunctionNode:
-    def __init__(self, call_function, arguments):
-        self.call_function = call_function
+    def __init__(self, function_name, arguments):
+        self.function_name = function_name
         self.arguments = arguments
 
-        self.pos_start = self.call_function.pos_start
+        self.pos_start = self.function_name.pos_start
 
         if len(self.arguments):
             self.pos_end = self.arguments[-1].pos_end
         else:
-            self.pos_end = self.call_function.pos_end
+            self.pos_end = self.function_name.pos_end
+
+    def __repr__(self):
+        return f'({self.function_name}: {self.arguments})'
 
 
 class StatementsNode:
