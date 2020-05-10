@@ -3,7 +3,7 @@ from lexer.lexer import FileLexer
 from lexer.token.token_type import TokenType
 from lexer.token.tokens import BaseToken
 from parsing.nodes import IntNode, BinaryOperationNode, UnaryOperationNode, VariableAssignmentNode, VarAccessNode, \
-    IfNode, WhileNode, FunctionDefinitionNode, CallFunctionNode, StringNode, DoubleNode, ListNode
+    IfNode, WhileNode, FunctionDefinitionNode, CallFunctionNode, StringNode, DoubleNode, ListNode, ReturnNode
 
 VARIABLES = (BaseToken(TokenType.T_STRING), BaseToken(TokenType.T_DOUBLE), BaseToken(TokenType.T_INT))
 
@@ -66,9 +66,25 @@ class Parser:
         elif self.current_token.type == TokenType.T_FUNCTION:
             function_expression = self.perform_method(self.parse_function_expression)
             return function_expression
+
+        elif self.current_token.type == TokenType.T_RETURN:
+            return_expression = self.parse_return()
+            self.check_token_and_next(TokenType.T_SEMICOLON, ';')
+            return return_expression
+
         expression = self.parse_expression()
         self.check_token_and_next(TokenType.T_SEMICOLON, ';')
         return expression
+
+    def parse_return(self):
+        pos_start = self.current_token.pos_start
+        pos_end = self.current_token.pos_end
+        self.next_token()
+        expression = None
+        if self.current_token.type != TokenType.T_SEMICOLON:
+            expression = self.parse_expression()
+            pos_end = expression.pos_end
+        return ReturnNode(expression, pos_start, pos_end)
 
     def parse_expression(self):
         if self.current_token in VARIABLES:
@@ -197,6 +213,7 @@ class Parser:
         self.check_token_and_next(TokenType.T_LBRACKET, '{')
         expressions = self.statements([TokenType.T_RBRACKET])
         if_cases.append((condition, expressions))
+        self.next_token()
 
         while self.current_token.type == TokenType.T_ELSEIF:
             self.next_token()
@@ -205,6 +222,7 @@ class Parser:
             expressions = self.statements([TokenType.T_RBRACKET])
             if_cases.append((condition, expressions))
 
+        self.next_token()
         if self.current_token.type == TokenType.T_ELSE:
             self.next_token()
             self.check_token_and_next(TokenType.T_LBRACKET, '{')

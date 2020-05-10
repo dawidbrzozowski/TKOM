@@ -136,3 +136,16 @@ class ListNode:
         for element in self.element_nodes:
             result += str(element)
         return result
+
+
+class ReturnNode:
+    def __init__(self, node, pos_start, pos_end):
+        self.node = node
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __repr__(self):
+        if self.node:
+            return f'<Return> {self.node}'
+        else:
+            return '<Return>'
