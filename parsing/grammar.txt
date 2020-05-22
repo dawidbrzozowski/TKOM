@@ -1,0 +1,60 @@
+Statements              : Instruction (Instruction)*
+
+Statement               : Expression SEMICOLON
+                        : RETURN Expression? SEMICOLON
+                        : BREAK SEMICOLON
+                        : CONTINUE SEMICOLON
+                        : If-Expression
+                        : While-Expression
+                        : Function-Definition
+
+If-Expression           : IF LPARENT Expression RPARENT LBRACKET Statements RBRACKET
+                          (ELSEIF LPARENT Expression RPARENT LBRACKET Statements RBRACKET)*
+                          (ELSE LBRACKET Statements RBRACKET)*
+
+While-Expression        : WHILE Expression LPARENT Expression RPARENT LBRACKET Statements RBRACKET
+
+Function-Definition     : FUNCTION IDENTIFIER LPARENT (Function-Argument (COMMA Function-Argument)*)? RPARENT
+                        ARROW Return-Type LBRACKET Instructions RBRACKET
+
+Function-Argument       : IDENTIFIER SEMICOLON TYPE
+
+Return-Type             : Type | VOID
+
+Expression              : Assignment
+                        : Comparison-Expression ((AND|OR) Comparison-Expression)*
+
+Assignment              : TYPE? IDENTIFIER ASSIGN Expression
+
+Comparison-Expression   : NOT Comparison-Expression
+                        : Arithmetic-Expression (Comparator Arithmetic-Expression)*
+
+Arithmetic-Expression   : Term ((PLUS|MINUS) Term)*
+
+Term                    : Factor ((MUL|DIV) Factor)*
+
+Factor                  : (PLUS|MINUS) Factor
+                        : Atom
+
+Atom                    : Value
+                        : IDENTIFIER
+                        : Function-Call
+                        : LPARENT Expression RPARENT
+
+Value                   : Numerical-Value|STRING_VALUE|Phys-Value|Unit-Value
+
+Numerical-Value         : INT_VALUE|DOUBLE_VALUE
+
+Phys-Value              : (Numerical-Value|IDENTIFIER) AMPERSAND Unit-Value
+
+Unit-Value              : VERTICAL-BAR Nominator (DIV Denominator)? VERTICAL-BAR
+
+Nominator               : (IDENTIFIER (MUL IDENTIFIER)* ) | 1
+
+Denominator             : IDENTIFIER (MUL IDENTIFIER)*
+
+Function-Call           : IDENTIFIER LPARENT (Expression (COMMA Expression)*) RPAREN
+
+Type                    : (INT|DOUBLE|STRING|PHYS|UNIT)
+
+Comparator              : (EQ|NOT_EQ|LESS|GREATER|LESS_OR_EQ|GREATER_OR_EQ)

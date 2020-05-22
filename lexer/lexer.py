@@ -5,7 +5,6 @@ from lexer.source import FileSource, StdInSource
 from lexer.token.tokens import BaseToken, Position, create_token
 from lexer.token.token_type import TokenType
 from lexer.regex2token import compile_regex2token
-from errors.error import print_error_and_exit
 
 
 class LexerBase:
@@ -16,12 +15,17 @@ class LexerBase:
         self.all_tokens = None
         self.token_iterator = 0
 
-    def get_next_token(self):
+    def get_next_token(self, move_index=True):
         if self.token_iterator < len(self.all_tokens):
             token = self.all_tokens[self.token_iterator]
-            self.token_iterator += 1
+            if move_index:
+                self.token_iterator += 1
             return token
         return None
+
+    def show_prev_token_location(self):
+        if self.token_iterator > 1:
+            return self.all_tokens[self.token_iterator-2].pos_end
 
     def next_token_exists(self):
         return True if self.token_iterator < len(self.all_tokens) else False
@@ -60,7 +64,7 @@ class LexerBase:
         try:
             return self._find_matching_token(line)
         except LexerError as e:
-            print_error_and_exit(e)
+            e.print_error_and_exit()
 
     def _find_matching_token(self, line):
         for regex in self.regex2token:

@@ -2,6 +2,6 @@ function sample_function (arg1:int,arg2:int) -> int {
     return arg1 + arg2;
 }
 
-print(sample_function(5 + 7))
+print(sample_function(5 + 7));
 
-unit = |m/s*s|
+unit u = |m/s*s|;

@@ -23,6 +23,8 @@ class TokenType(Enum):
     T_RBRACKET = auto()
     T_LPARENT = auto()
     T_RPARENT = auto()
+    T_VERTICAL_BAR = auto()
+    T_AMPERSAND = auto()
 
     # math operations
     T_PLUS = auto()
@@ -48,6 +50,7 @@ class TokenType(Enum):
     T_EOT = auto()
     T_IF = auto()
     T_ELSE = auto()
+    T_ELSEIF = auto()
     T_TRUE = auto()
     T_FALSE = auto()
     T_RETURN = auto()
@@ -55,6 +58,8 @@ class TokenType(Enum):
     T_ASSIGN = auto()
     T_VOID = auto()
     T_FUNCTION = auto()
+    T_BREAK = auto()
+    T_CONTINUE = auto()
 
     """
     TokenTypes that must have a value
@@ -69,8 +74,6 @@ class TokenType(Enum):
     VT_STRING = auto()
     VT_DOUBLE = auto()
     VT_INT = auto()
-    VT_UNIT = auto()
-    VT_PHYS = auto()
     # variable names etc.
     VT_ID = auto()
 
