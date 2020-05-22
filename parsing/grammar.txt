@@ -1,16 +1,18 @@
 Statements              : Instruction (Instruction)*
 
 Statement               : Expression SEMICOLON
-                        : RETURN Expression?
+                        : RETURN Expression? SEMICOLON
+                        : BREAK SEMICOLON
+                        : CONTINUE SEMICOLON
                         : If-Expression
                         : While-Expression
                         : Function-Definition
 
-If-Expression           : IF LPARENT Expression RPARENT LBRACKET Instructions RBRACKET
-                          (ELIF LPARENT Expression RPARENT LBRACKET Instructions RBRACKET)*
-                          (ELSE LBRACKET Instructions RBRACKET)*
+If-Expression           : IF LPARENT Expression RPARENT LBRACKET Statements RBRACKET
+                          (ELSEIF LPARENT Expression RPARENT LBRACKET Statements RBRACKET)*
+                          (ELSE LBRACKET Statements RBRACKET)*
 
-While-Expression        : WHILE Expression LPARENT Expression RPARENT LBRACKET Instructions RBRACKET
+While-Expression        : WHILE Expression LPARENT Expression RPARENT LBRACKET Statements RBRACKET
 
 Function-Definition     : FUNCTION IDENTIFIER LPARENT (Function-Argument (COMMA Function-Argument)*)? RPARENT
                         ARROW Return-Type LBRACKET Instructions RBRACKET
