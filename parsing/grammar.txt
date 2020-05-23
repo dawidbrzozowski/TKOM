@@ -41,7 +41,9 @@ Atom                    : Value
                         : Function-Call
                         : LPARENT Expression RPARENT
 
-Value                   : Numerical-Value|STRING_VALUE|Phys-Value|Unit-Value
+Value                   : Numerical-Value|STRING_VALUE|Phys-Value|Unit-Value|Bool-Value
+
+Bool-Value              : true|false
 
 Numerical-Value         : INT_VALUE|DOUBLE_VALUE
 
@@ -55,6 +57,6 @@ Denominator             : IDENTIFIER (MUL IDENTIFIER)*
 
 Function-Call           : IDENTIFIER LPARENT (Expression (COMMA Expression)*) RPAREN
 
-Type                    : (INT|DOUBLE|STRING|PHYS|UNIT)
+Type                    : (INT|DOUBLE|STRING|PHYS|UNIT|BOOL)
 
 Comparator              : (EQ|NOT_EQ|LESS|GREATER|LESS_OR_EQ|GREATER_OR_EQ)

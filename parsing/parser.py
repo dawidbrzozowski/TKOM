@@ -6,9 +6,18 @@ from lexer.token.token_type import TokenType
 from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
 
-VARIABLE_TYPES = (TokenType.T_STRING, TokenType.T_DOUBLE, TokenType.T_INT, TokenType.T_PHYS, TokenType.T_UNIT)
+VARIABLE_TYPES = (TokenType.T_STRING,
+                  TokenType.T_DOUBLE,
+                  TokenType.T_INT,
+                  TokenType.T_PHYS,
+                  TokenType.T_UNIT,
+                  TokenType.T_BOOL)
 
-COMPARISONS = (TokenType.T_EQ, TokenType.T_NOT_EQ, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ, TokenType.T_LESS,
+COMPARISONS = (TokenType.T_EQ,
+               TokenType.T_NOT_EQ,
+               TokenType.T_GREATER,
+               TokenType.T_GREATER_OR_EQ,
+               TokenType.T_LESS,
                TokenType.T_LESS_OR_EQ)
 
 NUMERICAL_VALUES = [TokenType.VT_INT, TokenType.VT_DOUBLE]
@@ -214,6 +223,10 @@ class Parser:
             if self._show_upcoming_token().type == TokenType.T_AMPERSAND:
                 return self._parse_phys_value()
 
+        elif token.type in (TokenType.T_TRUE, TokenType.T_FALSE):
+            self._next_token()
+            return BoolNode(token)
+
         elif token.type == TokenType.T_VERTICAL_BAR:
             return self._parse_unit_value()
 
@@ -290,7 +303,7 @@ class Parser:
         return CallFunctionNode(function_name, arguments)
 
     def _parse_type(self, include_void=False):
-        variable_types = VARIABLE_TYPES or TokenType.T_VOID if include_void else VARIABLE_TYPES
+        variable_types = (VARIABLE_TYPES, TokenType.T_VOID) if include_void else VARIABLE_TYPES
         if self.current_token.type not in variable_types:
             raise InvalidSyntaxError(self._get_last_token_location(), 'Expected type.')
         token = self.current_token

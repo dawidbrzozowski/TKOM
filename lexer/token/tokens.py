@@ -1,6 +1,7 @@
 from lexer.token.token_type import TokenType
 from lexer.token.token_type_repr import token_type_repr
 
+
 class Position:
     def __init__(self, row, column):
         self.row = row
@@ -55,6 +56,10 @@ class ValueToken(BaseToken):
 
 def create_token(token_type: TokenType, value, pos_start, pos_end):
     if token_type.has_value_field():
+        if token_type == TokenType.VT_INT:
+            value = int(value)
+        elif token_type == TokenType.VT_DOUBLE:
+            value = float(value)
         return ValueToken(token_type, value, pos_start, pos_end)
     else:
         return BaseToken(token_type, pos_start, pos_end)

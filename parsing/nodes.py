@@ -11,6 +11,16 @@ class IntNode:
         return f'{self.token}'
 
 
+class BoolNode:
+    def __init__(self, token):
+        self.token = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
+    def __repr__(self):
+        return f'{self.token}'
+
+
 class DoubleNode:
     def __init__(self, token):
         self.token = token
@@ -66,7 +76,7 @@ class VariableAccessNode:
 
 
 class VariableAssignmentNode:
-    def __init__(self, var_type, name: ValueToken, value: ValueToken):
+    def __init__(self, var_type, name: ValueToken, value):
         self.type = var_type
         self.name = name
         self.value = value
@@ -162,10 +172,10 @@ class ReturnNode:
 
 
 class TypeNode:
-    def __init__(self, var_type):
-        self.type = var_type
-        self.pos_start = var_type.pos_start
-        self.pos_end = var_type.pos_end
+    def __init__(self, token):
+        self.type = token.type
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
 
     def __repr__(self):
         return f'{self.type}'

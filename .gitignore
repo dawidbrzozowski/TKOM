@@ -1,0 +1,5 @@
+*pycache*
+*__init__*
+.idea*
+env/
+venv/
