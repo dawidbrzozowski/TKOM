@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from errors.error import RunTimeError
 from interpreting.context import Context
 from interpreting.utils import check_type_match
-from interpreting.values import Number, IntNumber, DoubleNumber, BoolValue
+from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue
 from lexer.lexer import StdInLexer, FileLexer
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
@@ -34,17 +34,19 @@ class Interpreter:
         return visit_method(node, context)
 
     def visit_IntNode(self, node: IntNode, context):
-        return IntNumber(node.token.value, node.pos_start, node.pos_end, context)
+        return IntValue(node.token.value, node.pos_start, node.pos_end, context)
 
     def visit_DoubleNode(self, node: DoubleNode, context):
-        return DoubleNumber(node.token.value, node.pos_start, node.pos_end, context)
+        return DoubleValue(node.token.value, node.pos_start, node.pos_end, context)
 
     def visit_StringNode(self, node: StringNode, context):
-        print('StringNode visited')
+        return StringValue(node.token.value, node.pos_start, node.pos_end, context)
 
     def visit_StatementsNode(self, node: StatementsNode, context):
         for statement in node.statements:
-            print(self.visit(statement, context))
+            result = self.visit(statement, context)
+            if result:
+                print(result)
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode, context):
         number = self.visit(node.node, context)
@@ -57,7 +59,6 @@ class Interpreter:
         return number
 
     def visit_BinaryOperationNode(self, node: BinaryOperationNode, context):
-        print('Binary operation node visited')
         left = self.visit(node.left, context)
         right = self.visit(node.right, context)
         operation = node.operation
@@ -107,6 +108,16 @@ class Interpreter:
 
     def visit_BoolNode(self, node: BoolNode, context):
         return BoolValue(True if node.token.type == TokenType.T_TRUE else False, node.pos_start, node.pos_end, context)
+
+    def visit_IfNode(self, node: IfNode, context):
+        for condition, statement in node.cases:
+            condition_result = self.visit(condition, context)
+            if condition_result.value:
+                statement_value = self.visit(statement, context)
+                return statement_value
+        if node.else_case:
+            else_statement_value = self.visit(node.else_case, context)
+            return else_statement_value
 
     def visit_not_found(self, node, context):
         raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)

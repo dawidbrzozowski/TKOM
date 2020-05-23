@@ -60,6 +60,8 @@ def create_token(token_type: TokenType, value, pos_start, pos_end):
             value = int(value)
         elif token_type == TokenType.VT_DOUBLE:
             value = float(value)
+        elif token_type == TokenType.VT_STRING:
+            value = value[1:-1]
         return ValueToken(token_type, value, pos_start, pos_end)
     else:
         return BaseToken(token_type, pos_start, pos_end)

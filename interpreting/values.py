@@ -1,4 +1,6 @@
 from errors.error import RunTimeError
+from lexer.token.token_type import TokenType
+from lexer.token.token_type_repr import token_type_repr
 
 
 class Value:
@@ -18,6 +20,24 @@ class Value:
     def __repr__(self):
         return str(self.value)
 
+    def add(self, other):
+        self.raise_runtime_error_for_operation('+', other)
+
+    def subtract(self, other):
+        self.raise_runtime_error_for_operation('-', other)
+
+    def multiply(self, other):
+        self.raise_runtime_error_for_operation('*', other)
+
+    def divide(self, other):
+        self.raise_runtime_error_for_operation('/', other)
+
+    def raise_runtime_error_for_operation(self, operator, other):
+        raise RunTimeError(self.pos_start,
+                           f'{operator} not defined for type {token_type_repr.get(inversed_matching.get(type(self)))}'
+                           f' and {token_type_repr.get(inversed_matching.get(type(other)))}',
+                           self.context)
+
 
 class Number(Value):
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
@@ -25,7 +45,7 @@ class Number(Value):
 
     def is_equal(self, other):
         if isinstance(other, Number):
-            return BoolValue(self.value == other.value, self.pos_start, self.pos_end, self.context)
+            return BoolValue(self.value == other.value, self.context)
         else:
             raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
                                self.context)
@@ -71,74 +91,76 @@ class Number(Value):
         return BoolValue(1 if self.value == 0 else 0, self.pos_start, self.pos_end, self.context)
 
 
-class IntNumber(Number):
+class IntValue(Number):
 
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
         super().__init__(int(value), pos_start, pos_end, context)
 
     def add(self, other):
-        if isinstance(other, IntNumber):
-            return IntNumber(self.value + other.value, context=self.context)
-        elif isinstance(other, DoubleNumber):
-            return DoubleNumber(self.value + other.value, context=self.context)
+        if isinstance(other, IntValue):
+            return IntValue(self.value + other.value, context=self.context)
+        elif isinstance(other, DoubleValue):
+            return DoubleValue(self.value + other.value, context=self.context)
         else:
             raise RunTimeError(other.pos_start, f"Can't add values of type int and {type(other)}", self.context)
 
     def subtract(self, other):
-        if isinstance(other, IntNumber):
-            return IntNumber(self.value - other.value, context=self.context)
-        elif isinstance(other, DoubleNumber):
-            return DoubleNumber(self.value - other.value, context=self.context)
+        if isinstance(other, IntValue):
+            return IntValue(self.value - other.value, context=self.context)
+        elif isinstance(other, DoubleValue):
+            return DoubleValue(self.value - other.value, context=self.context)
         else:
             raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
 
     def multiply(self, other):
-        if isinstance(other, IntNumber):
-            return IntNumber(self.value * other.value, context=self.context)
-        elif isinstance(other, DoubleNumber):
-            return DoubleNumber(self.value * other.value, context=self.context)
+        if isinstance(other, IntValue):
+            return IntValue(self.value * other.value, context=self.context)
+        elif isinstance(other, DoubleValue):
+            return DoubleValue(self.value * other.value, context=self.context)
+        elif isinstance(other, StringValue):
+            return StringValue(self.value * other.value, context=self.context)
         else:
             raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
 
     def divide(self, other):
-        if isinstance(other, IntNumber):
+        if isinstance(other, IntValue):
             if other.value == 0:
                 raise RunTimeError(other.pos_start, 'Division by zero.', self.context)
-            return IntNumber(self.value // other.value, context=self.context)
-        elif isinstance(other, DoubleNumber):
-            return DoubleNumber(self.value / other.value, context=self.context)
+            return IntValue(self.value // other.value, context=self.context)
+        elif isinstance(other, DoubleValue):
+            return DoubleValue(self.value / other.value, context=self.context)
         else:
             raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
 
     def copy(self):
-        return IntNumber(self.value, self.pos_start, self.pos_end, self.context)
+        return IntValue(self.value, self.pos_start, self.pos_end, self.context)
 
 
-class DoubleNumber(Number):
+class DoubleValue(Number):
 
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
         super().__init__(float(value), pos_start, pos_end, context)
 
     def add(self, other):
         if isinstance(other, Number):
-            return DoubleNumber(self.value + other.value, context=self.context)
+            return DoubleValue(self.value + other.value, context=self.context)
 
     def subtract(self, other):
         if isinstance(other, Number):
-            return IntNumber(self.value - other.value, context=self.context)
+            return IntValue(self.value - other.value, context=self.context)
 
     def multiply(self, other):
         if isinstance(other, Number):
-            return IntNumber(self.value * other.value, context=self.context)
+            return IntValue(self.value * other.value, context=self.context)
 
     def divide(self, other):
         if isinstance(other, Number):
             if other.value == 0:
                 raise RunTimeError(other.pos_start, 'Division by zero.', self.context)
-            return IntNumber(self.value / other.value, context=self.context)
+            return IntValue(self.value / other.value, context=self.context)
 
     def copy(self):
-        return DoubleNumber(self.value, self.pos_start, self.pos_end, self.context)
+        return DoubleValue(self.value, self.pos_start, self.pos_end, self.context)
 
 
 class BoolValue(Value):
@@ -147,3 +169,33 @@ class BoolValue(Value):
 
     def __repr__(self):
         return 'true' if self.value else 'false'
+
+
+class StringValue(Value):
+    def __init__(self, value, pos_start=None, pos_end=None, context=None):
+        super().__init__(value, pos_start, pos_end, context)
+
+    def add(self, other):
+        if isinstance(other, StringValue):
+            return StringValue(self.value + other.value, context=self.context)
+        self.raise_runtime_error_for_operation('+', other)
+
+    def multiply(self, other):
+        if isinstance(other, IntValue):
+            return StringValue(self.value * other.value, context=self.context)
+        self.raise_runtime_error_for_operation('*', other)
+
+
+matching_types = {
+    TokenType.T_BOOL: BoolValue,
+    TokenType.T_INT: IntValue,
+    TokenType.T_DOUBLE: DoubleValue,
+    TokenType.T_STRING: StringValue
+}
+
+inversed_matching = {
+    BoolValue: TokenType.T_BOOL,
+    IntValue: TokenType.T_INT,
+    DoubleValue: TokenType.T_DOUBLE,
+    StringValue: TokenType.T_STRING
+}
