@@ -1,9 +1,10 @@
 from errors.error import RunTimeError
-from lexer.token.token_type import TokenType
-from lexer.token.token_type_repr import token_type_repr
+from interpreting.context import Context
 
 
 class Value:
+    type_ = None
+
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
         self.value = value
         self.pos_start = pos_start
@@ -21,22 +22,47 @@ class Value:
         return str(self.value)
 
     def add(self, other):
-        self.raise_runtime_error_for_operation('+', other)
+        self.raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
-        self.raise_runtime_error_for_operation('-', other)
+        self.raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
-        self.raise_runtime_error_for_operation('*', other)
+        self.raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
-        self.raise_runtime_error_for_operation('/', other)
+        self.raise_runtime_error_for_action('/', other)
 
-    def raise_runtime_error_for_operation(self, operator, other):
+    def is_equal(self, other):
+        self.raise_runtime_error_for_action('==', other)
+
+    def is_not_equal(self, other):
+        self.raise_runtime_error_for_action('!=', other)
+
+    def is_greater_than(self, other):
+        self.raise_runtime_error_for_action('>', other)
+
+    def is_less_than(self, other):
+        self.raise_runtime_error_for_action('<', other)
+
+    def is_greater_or_eq(self, other):
+        self.raise_runtime_error_for_action('>=', other)
+
+    def is_less_or_eq(self, other):
+        self.raise_runtime_error_for_action('<=', other)
+
+    def raise_runtime_error_for_action(self, operator, other):
         raise RunTimeError(self.pos_start,
-                           f'{operator} not defined for type {token_type_repr.get(inversed_matching.get(type(self)))}'
-                           f' and {token_type_repr.get(inversed_matching.get(type(other)))}',
-                           self.context)
+                           f'{operator} not defined for type {self.type_} and {other.type_}', self.context)
+
+    def and_(self, other):
+        self.raise_runtime_error_for_action('and', other)
+
+    def or_(self, other):
+        self.raise_runtime_error_for_action('or', other)
+
+    def not_(self):
+        raise RunTimeError(self.pos_start, f"'not' not defined for type: {self.type_}", self.context)
 
 
 class Number(Value):
@@ -47,54 +73,45 @@ class Number(Value):
         if isinstance(other, Number):
             return BoolValue(self.value == other.value, self.context)
         else:
-            raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
-                               self.context)
+            self.raise_runtime_error_for_action('==', other)
 
     def is_not_equal(self, other):
-        return BoolValue(1 if not self.is_equal(other).value else 0)
+        if isinstance(other, Number):
+            return BoolValue(self.value != other.value, self.context)
+        else:
+            self.raise_runtime_error_for_action('!=', other)
 
     def is_greater_than(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value > other.value, self.pos_start, self.pos_end, self.context)
         else:
-            raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
-                               self.context)
+            self.raise_runtime_error_for_action('>', other)
 
     def is_less_or_eq(self, other):
-        return BoolValue(1 if not self.is_greater_than(other).value else 0)
+        if isinstance(other, Number):
+            return BoolValue(self.value <= other.value, self.pos_start, self.pos_end, self.context)
+        else:
+            self.raise_runtime_error_for_action('<=', other)
 
     def is_less_than(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value < other.value, self.pos_start, self.pos_end, self.context)
         else:
-            raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
-                               self.context)
+            self.raise_runtime_error_for_action('<', other)
 
     def is_greater_or_eq(self, other):
-        return BoolValue(1 if not self.is_less_than(other).value else 0)
-
-    def and_(self, other):
         if isinstance(other, Number):
-            return BoolValue(self.value and other.value, self.pos_start, self.pos_end, self.context)
+            return BoolValue(self.value >= other.value, self.pos_start, self.pos_end, self.context)
         else:
-            raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
-                               self.context)
-
-    def or_(self, other):
-        if isinstance(other, Number):
-            return BoolValue(self.value or other.value, self.pos_start, self.pos_end, self.context)
-        else:
-            raise RunTimeError(self.pos_start, f"Can't compare values of type {type(self.value)}, {type(other.value)}",
-                               self.context)
-
-    def not_(self):
-        return BoolValue(1 if self.value == 0 else 0, self.pos_start, self.pos_end, self.context)
+            self.raise_runtime_error_for_action('>=', other)
 
 
 class IntValue(Number):
+    type_ = 'int'
 
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
-        super().__init__(int(value), pos_start, pos_end, context)
+        value = int(value) if value else None
+        super().__init__(value, pos_start, pos_end, context)
 
     def add(self, other):
         if isinstance(other, IntValue):
@@ -137,9 +154,11 @@ class IntValue(Number):
 
 
 class DoubleValue(Number):
+    type_ = 'double'
 
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
-        super().__init__(float(value), pos_start, pos_end, context)
+        value = float(value) if value else None
+        super().__init__(value, pos_start, pos_end, context)
 
     def add(self, other):
         if isinstance(other, Number):
@@ -164,38 +183,54 @@ class DoubleValue(Number):
 
 
 class BoolValue(Value):
+    type_ = 'bool'
+
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
         super().__init__(value, pos_start, pos_end, context)
 
     def __repr__(self):
         return 'true' if self.value else 'false'
 
+    def and_(self, other):
+        if isinstance(other, Number):
+            return BoolValue(self.value and other.value, self.pos_start, self.pos_end, self.context)
+        else:
+            self.raise_runtime_error_for_action('and', other)
+
+    def or_(self, other):
+        if isinstance(other, Number):
+            return BoolValue(self.value or other.value, self.pos_start, self.pos_end, self.context)
+        else:
+            self.raise_runtime_error_for_action('or', other)
+
+    def not_(self):
+        return BoolValue(not self.value, self.pos_start, self.pos_end, self.context)
+
 
 class StringValue(Value):
+    type_ = 'string'
+
     def __init__(self, value, pos_start=None, pos_end=None, context=None):
         super().__init__(value, pos_start, pos_end, context)
 
     def add(self, other):
         if isinstance(other, StringValue):
             return StringValue(self.value + other.value, context=self.context)
-        self.raise_runtime_error_for_operation('+', other)
+        self.raise_runtime_error_for_action('+', other)
 
     def multiply(self, other):
         if isinstance(other, IntValue):
             return StringValue(self.value * other.value, context=self.context)
-        self.raise_runtime_error_for_operation('*', other)
+        self.raise_runtime_error_for_action('*', other)
 
 
-matching_types = {
-    TokenType.T_BOOL: BoolValue,
-    TokenType.T_INT: IntValue,
-    TokenType.T_DOUBLE: DoubleValue,
-    TokenType.T_STRING: StringValue
-}
-
-inversed_matching = {
-    BoolValue: TokenType.T_BOOL,
-    IntValue: TokenType.T_INT,
-    DoubleValue: TokenType.T_DOUBLE,
-    StringValue: TokenType.T_STRING
-}
+class Function:
+    def __init__(self, name, arguments: [Value], body, return_type, parent_context, pos_start, pos_end):
+        self.name = name
+        self.body = body
+        self.return_type = return_type
+        self.context = Context(name, parent_context, parent_context.position)
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        for argument in arguments:
+            self.context.symbol_table.set(argument)

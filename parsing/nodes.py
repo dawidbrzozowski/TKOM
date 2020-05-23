@@ -117,9 +117,9 @@ class WhileNode:
 
 
 class FunctionDefinitionNode:
-    def __init__(self, function_name: ValueToken, argument_names, body, return_type):
+    def __init__(self, function_name: ValueToken, arguments, body, return_type):
         self.function_name = function_name
-        self.argument_names = argument_names
+        self.arguments = arguments
         self.body = body
         self.return_type = return_type
 
@@ -127,7 +127,7 @@ class FunctionDefinitionNode:
         self.pos_end = self.body.pos_end
 
     def __repr__(self):
-        return f'(Function:{self.function_name}->{self.return_type} Args:{self.argument_names} Body:{self.body})'
+        return f'(Function:{self.function_name}->{self.return_type} Args:{self.arguments} Body:{self.body})'
 
 
 class CallFunctionNode:

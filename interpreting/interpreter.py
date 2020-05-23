@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from errors.error import RunTimeError
 from interpreting.context import Context
 from interpreting.utils import check_type_match
-from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue
+from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue, Function
 from lexer.lexer import StdInLexer, FileLexer
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
@@ -100,11 +100,24 @@ class Interpreter:
         return value
 
     def visit_VariableAssignmentNode(self, node: VariableAssignmentNode, context):
-        variable_name = node.name.value
+        variable_name = node.name
         value = self.visit(node.value, context)
-        check_type_match(node.type, value, context)
-        context.symbol_table.set(variable_name, value)
+        self.verify_assignment(variable_name, value, node.type, context)
+        context.symbol_table.set(variable_name.value, value)
         return value
+
+    def verify_assignment(self, variable_name, value, defined_type, context):
+        check_type_match(defined_type, value, context)
+        if defined_type is None:
+            current_value = context.symbol_table.get(variable_name.value)
+            if not current_value:
+                raise RunTimeError(variable_name.pos_start,
+                                   'This variable has not been defined yet. Put a type.', context)
+
+            if current_value.type_ != value.type_:
+                raise RunTimeError(value.pos_start,
+                                   f'Tried to put a value of type {value.type_}'
+                                   f' to a variable of type {current_value.type_}', context)
 
     def visit_BoolNode(self, node: BoolNode, context):
         return BoolValue(True if node.token.type == TokenType.T_TRUE else False, node.pos_start, node.pos_end, context)
@@ -118,6 +131,25 @@ class Interpreter:
         if node.else_case:
             else_statement_value = self.visit(node.else_case, context)
             return else_statement_value
+
+    def visit_WhileNode(self, node: WhileNode, context):
+        condition = self.visit(node.condition_node, context)
+        while condition.value:
+            self.visit(node.body_node, context)
+            condition = self.visit(node.condition_node, context)
+
+    def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context):
+        function_name = node.function_name.value
+        arguments = [self.visit(argument, context) for argument in node.arguments]
+        return_type = node.return_type
+        body = node.body
+        function = Function(function_name, arguments, body, return_type, context, node.pos_start, node.pos_end)
+        context.symbol_table.set(function_name, function)
+
+    def visit_FunctionArgumentNode(self, node: FunctionArgumentNode, context):
+        variable_name = node.name.value
+        value = None
+        context.symbol_table.set(variable_name, value)
 
     def visit_not_found(self, node, context):
         raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)

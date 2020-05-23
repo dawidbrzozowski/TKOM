@@ -1,21 +1,17 @@
 class Context:
-    def __init__(self, name, parent=None, parent_position=None, symbol_table=None):
+    def __init__(self, name, parent=None, position=None):
         self.name = name
         self.parent = parent
-        self.parent_start_pos = parent_position
-        self.symbol_table = symbol_table if symbol_table is not None else SymbolTable()
+        self.position = position
+        self.symbol_table = SymbolTable(parent.symbol_table) if parent else SymbolTable()
 
 
 class SymbolTable:
-    def __init__(self):
-        self.symbols = {}
-        self.parent = None
+    def __init__(self, symbol_table=None):
+        self.symbols = dict(symbol_table.symbols) if symbol_table else {}
 
     def get(self, name):
-        value = self.symbols.get(name)
-        if value is None and self.parent:
-            return self.parent.get(name)
-        return value
+        return self.symbols.get(name)
 
     def set(self, name, value):
         self.symbols[name] = value

@@ -39,6 +39,6 @@ class RunTimeError(Exception):
 
         while context:
             traceback = f'Line: {str(position.row)}, in {context.name}\n' + traceback
-            position = context.parent_start_pos
+            position = context.parent.position if context.parent else None
             context = context.parent
         return 'Traceback (most recent call last): \n' + traceback
