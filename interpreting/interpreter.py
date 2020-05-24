@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 
-from interpreting.context import Context
 from interpreting.visitator import Visitator
 from lexer.lexer import StdInLexer, FileLexer
 from parsing.parser import Parser

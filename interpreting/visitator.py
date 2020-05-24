@@ -1,32 +1,20 @@
-import functools
-
-from errors.error import RunTimeError
+from errors.error import RunTimeError, run_with_exception_safety
 from interpreting.context import ContextManager
+from interpreting.utils import check_argument_correctness, check_return_type
 from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, FunctionDefinition, FunctionArgument, \
-    ReturnValue
+    ReturnValue, KeywordValue
 from lexer.token.token_type import TokenType
-from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
-
-
-def run_time_exception_safety(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        result = None
-        try:
-            result = func(*args, **kwargs)
-        except RunTimeError as e:
-            e.print_error_and_exit()
-        return result
-
-    return wrapper
 
 
 class Visitator:
     def __init__(self):
         self.context_manager = ContextManager()
 
-    @run_time_exception_safety
+    def perform_visiting(self, ast_root):
+        return self.visit(ast_root)
+
+    @run_with_exception_safety
     def visit(self, node):
         node_name = type(node).__name__
         visit_method_name = f'visit_{node_name}'
@@ -46,13 +34,11 @@ class Visitator:
         result = None
         for statement in node.statements:
             result = self.visit(statement)
-            if result == 'break':
-                break
-            elif result == 'continue':
-                break
-            elif isinstance(result, ReturnValue):
+            if isinstance(result, ReturnValue):
                 return result.value
-        if isinstance(result, (IntValue, StringValue, DoubleValue, BoolValue)):
+            elif isinstance(result, KeywordValue):
+                return result
+        if isinstance(result, (IntValue, StringValue, DoubleValue, BoolValue, KeywordValue)):
             return result
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode):
@@ -127,7 +113,7 @@ class Visitator:
         condition = self.visit(node.condition_node)
         while condition.value:
             body_result = self.visit(node.body_node)
-            if body_result == 'break':
+            if body_result == KeywordValue('break'):
                 break
             condition = self.visit(node.condition_node)
 
@@ -143,50 +129,34 @@ class Visitator:
         function_name = node.function_name.value
         function = self.context_manager.get_function(function_name)
         arguments = [self.visit(argument) for argument in node.arguments]
-        if len(arguments) != len(function.argument_definitions):
-            raise RunTimeError(node.pos_start,
-                               f'Wrong amount of arguments. Expected: {len(function.argument_definitions)}.'
-                               f' Got: {len(arguments)}', self.context_manager.current_context)
-        self.context_manager.switch_context_to(function_name)
-        for argument, defined_argument in zip(arguments, function.argument_definitions):
-            if argument.type_ != defined_argument.type:
-                raise RunTimeError(node.pos_start, f'Wrong type of argument. Expected {defined_argument.type} '
-                                                   f'got: {argument.type_}', self.context_manager.current_context)
-            else:
-                self.context_manager.current_context.add_variable(defined_argument.name, argument)
-
         self.context_manager.current_context.position = node.pos_start.copy()
-        function_result = self.execute_function(function)
-        if token_type_repr.get(function.return_type) == 'void' and function_result.type_ is not None:
-            raise RunTimeError(function.return_type.pos_start,
-                               f'Expected return type: {token_type_repr.get(function.return_type.type.type)}'
-                               f' got {function_result.type_}', function.context)
-        elif function_result.type_ != token_type_repr.get(function.return_type.type.type):
-            raise RunTimeError(function.return_type.pos_start,
-                               f'Expected return type: {token_type_repr.get(function.return_type.type.type)}'
-                               f' got {function_result.type_}', function.context)
+        function_result = self.execute_function(function, arguments)
+        return function_result
 
+    def execute_function(self, function: FunctionDefinition, arguments):
+        check_argument_correctness(function, arguments, self.context_manager.current_context)
+        self.context_manager.switch_context_to(function)
+        self.add_arguments_to_function_context(function, arguments)
+        function_result = self.visit(function.body)
+        check_return_type(function, function_result, self.context_manager.current_context)
         self.context_manager.switch_to_parent_context()
         return function_result
 
-    def execute_function(self, function):
-        result = self.visit(function.body)
-        return result
+    def add_arguments_to_function_context(self, function: FunctionDefinition, actual_arguments):
+        for argument, defined_argument in zip(actual_arguments, function.argument_definitions):
+            self.context_manager.current_context.add_variable(defined_argument.name, argument)
 
     def visit_FunctionArgumentNode(self, node: FunctionArgumentNode):
         variable_name = node.name.value
         argument = FunctionArgument(variable_name, node.type.type)
         return argument
 
-    def visit_BreakNode(self, node: BreakNode):
-        return str(node)
-
-    def visit_ContinueNode(self, node: ContinueNode):
-        return str(node)
+    def visit_KeywordNode(self, node: KeywordNode):
+        return KeywordValue(node.value, node.pos_start, node.pos_end)
 
     def visit_ReturnNode(self, return_node: ReturnNode):
         value = self.visit(return_node.node) if return_node.node else None
-        return ReturnValue(value)
+        return ReturnValue(value, return_node.pos_start, return_node.pos_end)
 
     def visit_not_found(self, node, context):
         raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)

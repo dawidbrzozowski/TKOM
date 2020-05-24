@@ -1,5 +1,5 @@
 from errors.error import RunTimeError
-from lexer.token.token_type_repr import token_type_repr
+from interpreting.values import FunctionDefinition
 
 
 class Context:
@@ -42,12 +42,14 @@ class SymbolTable:
 class ContextManager:
     def __init__(self):
         self.global_context = Context('<global>')
-        self.current_context = Context('<main>', parent=self.global_context, use_parent_symbol_table=True)
+        self.current_context = Context('<main>')
+        self.current_context.copy_symbols_from(self.global_context)
 
-    def switch_context_to(self, function_name):
-        function_context = Context(function_name, self.current_context, self.current_context.position)
+    def switch_context_to(self, function: FunctionDefinition):
+        function_context = Context(function.name, self.current_context, self.current_context.position)
         function_context.copy_symbols_from(self.global_context)
         self.current_context = function_context
+        self.current_context.position = function.pos_start.copy()
 
     def switch_to_parent_context(self):
         if not self.current_context.parent:
@@ -82,8 +84,7 @@ class ContextManager:
                                    f' to a variable of type {current_value.type_}', self.current_context)
 
     def check_type_match(self, expected_type, actual_value):
-        if expected_type and actual_value and not actual_value.type_ == token_type_repr.get(
-                expected_type.type.type):
+        if expected_type and actual_value and not actual_value.type_ == expected_type.type.type.as_string():
             raise RunTimeError(expected_type.pos_start,
-                               f'Expected type: {token_type_repr.get(expected_type.type.type)}'
+                               f'Expected type: {expected_type.type.type.as_string}'
                                f' got {actual_value.type_} instead.', self.current_context)

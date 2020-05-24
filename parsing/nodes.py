@@ -217,13 +217,14 @@ class PhysNode:
         return f'(Phys: {self.value}*{self.unit})'
 
 
-class BreakNode:
-    def __init__(self, pos_start, pos_end):
+class KeywordNode:
+    def __init__(self, value, pos_start, pos_end):
+        self.value = value
         self.pos_start = pos_start
         self.pos_end = pos_end
 
     def __repr__(self):
-        return 'Break'
+        return f'{self.value}'
 
 
 class ContinueNode:
@@ -232,4 +233,4 @@ class ContinueNode:
         self.pos_end = pos_end
 
     def __repr__(self):
-        return 'Continue'
+        return 'continue'

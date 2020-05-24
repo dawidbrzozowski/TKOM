@@ -1,5 +1,4 @@
 from errors.error import RunTimeError
-from lexer.token.token_type_repr import token_type_repr
 
 
 class Value:
@@ -245,10 +244,23 @@ class FunctionDefinition:
 class FunctionArgument:
     def __init__(self, name, type_node):
         self.name = name
-        self.type = token_type_repr.get(type_node.type)
+        self.type = type_node.type.as_string()
 
 
-class ReturnValue:
-    def __init__(self, value):
+class KeywordValue:
+    def __init__(self, value, pos_start=None, pos_end=None):
         self.value = value
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+    def __eq__(self, other):
+        if isinstance(other, KeywordValue):
+            return self.value == other.value
+        else:
+            return False
+
+
+class ReturnValue(KeywordValue):
+    def __init__(self, value, pos_start, pos_end):
+        super().__init__(value, pos_start, pos_end)
         self.type = value.type_

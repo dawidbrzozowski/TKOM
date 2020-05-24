@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
 
-from errors.error import InvalidSyntaxError
+from errors.error import InvalidSyntaxError, run_with_exception_safety
 from lexer.lexer import FileLexer, StdInLexer
 from lexer.token.token_type import TokenType
-from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
 
 VARIABLE_TYPES = [TokenType.T_STRING,
@@ -37,16 +36,17 @@ class Parser:
         statements = []
         pos_start = self.current_token.pos_start.copy()
 
-        statement = self._perform_method(self._parse_statement)
+        statement = self._parse_statement()
         statements.append(statement)
 
         while self.current_token.type != end_token:
-            statement = self._perform_method(self._parse_statement)
+            statement = self._parse_statement()
             statements.append(statement)
         pos_end = self.current_token.pos_end
         self._check_token_and_next(self.current_token.type)
         return StatementsNode(statements, pos_start, pos_end)
 
+    @run_with_exception_safety
     def _parse_statement(self):
         token = self.current_token
         if token.type == TokenType.T_IF:
@@ -68,11 +68,11 @@ class Parser:
 
         elif self._is_current_token_type(TokenType.T_BREAK):
             self._check_token_and_next(TokenType.T_SEMICOLON)
-            return BreakNode(token.pos_start, self.current_token.pos_start)
+            return KeywordNode('break', token.pos_start, token.pos_end)
 
         elif self._is_current_token_type(TokenType.T_CONTINUE):
             self._check_token_and_next(TokenType.T_SEMICOLON)
-            return ContinueNode(token.pos_start, self.current_token.pos_start)
+            return KeywordNode('continue', token.pos_start, token.pos_end)
 
         expression = self._parse_expression()
         self._check_token_and_next(TokenType.T_SEMICOLON)
@@ -325,7 +325,7 @@ class Parser:
 
     def _check_token_and_next(self, expected: TokenType):
         if not self.current_token.type == expected:
-            raise InvalidSyntaxError(self._get_last_token_location(), f'Expected {token_type_repr.get(expected)}')
+            raise InvalidSyntaxError(self._get_last_token_location(), f'Expected {expected.as_string()}')
         self._next_token()
 
     def _get_token_if_type_and_next(self, expected: TokenType):
@@ -342,14 +342,6 @@ class Parser:
 
     def _get_last_token_location(self):
         return self.lexer.show_prev_token_location()
-
-    def _perform_method(self, method):
-        result = None
-        try:
-            result = method()
-        except InvalidSyntaxError as e:
-            e.print_error_and_exit()
-        return result
 
 
 def main(args):
