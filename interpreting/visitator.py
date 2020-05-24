@@ -84,7 +84,7 @@ class Visitator:
         return result
 
     def visit_VariableAccessNode(self, node: VariableAccessNode):
-        variable_name = node.name.value
+        variable_name = node.name
         value = self.context_manager.get_variable(variable_name)
         value = value.copy()
         value.set_position(node.pos_start, node.pos_end)
@@ -126,7 +126,7 @@ class Visitator:
         self.context_manager.add_function(function_name, function)
 
     def visit_CallFunctionNode(self, node: CallFunctionNode):
-        function_name = node.function_name.value
+        function_name = node.function_name
         function = self.context_manager.get_function(function_name)
         arguments = [self.visit(argument) for argument in node.arguments]
         self.context_manager.current_context.position = node.pos_start.copy()

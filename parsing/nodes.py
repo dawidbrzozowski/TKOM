@@ -74,12 +74,12 @@ class UnaryOperationNode(OperationNode):
 class VariableNode:
     def __init__(self, name: ValueToken):
         self.name = name
+        self.pos_start = name.pos_start
 
 
 class VariableAccessNode(VariableNode):
     def __init__(self, name: ValueToken):
         super().__init__(name)
-        self.pos_start = self.name.pos_start
         self.pos_end = self.name.pos_end
 
     def __repr__(self):
@@ -92,7 +92,6 @@ class VariableAssignmentNode(VariableNode):
         super().__init__(name)
         self.value = value  # node
 
-        self.pos_start = self.name.pos_start
         self.pos_end = self.value.pos_end
 
     def __repr__(self):
