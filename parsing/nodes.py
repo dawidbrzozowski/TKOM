@@ -1,7 +1,19 @@
-from lexer.token.tokens import ValueToken
+from typing import List
+
+from lexer.token.tokens import ValueToken, BaseToken
 
 
-class IntNode:
+class TypeNode:
+    def __init__(self, token):
+        self.type = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
+
+    def __repr__(self):
+        return f'{self.type}'
+
+
+class ValueNode:
     def __init__(self, token):
         self.token = token
         self.pos_start = token.pos_start
@@ -11,41 +23,36 @@ class IntNode:
         return f'{self.token}'
 
 
-class BoolNode:
-    def __init__(self, token):
-        self.token = token
-        self.pos_start = token.pos_start
-        self.pos_end = token.pos_end
-
-    def __repr__(self):
-        return f'{self.token}'
+class IntNode(ValueNode):
+    def __init__(self, token: ValueToken):
+        super().__init__(token)
 
 
-class DoubleNode:
-    def __init__(self, token):
-        self.token = token
-        self.pos_start = token.pos_start
-        self.pos_end = token.pos_end
-
-    def __repr__(self):
-        return f'{self.token}'
+class BoolNode(ValueNode):
+    def __init__(self, token: BaseToken):
+        super().__init__(token)
 
 
-class StringNode:
-    def __init__(self, token):
-        self.token = token
-        self.pos_start = token.pos_start
-        self.pos_end = token.pos_end
-
-    def __repr__(self):
-        return f'{self.token}'
+class DoubleNode(ValueNode):
+    def __init__(self, token: ValueToken):
+        super().__init__(token)
 
 
-class BinaryOperationNode:
-    def __init__(self, left, operation, right):
-        self.left = left
+class StringNode(ValueNode):
+    def __init__(self, token: ValueToken):
+        super().__init__(token)
+
+
+class OperationNode:
+    def __init__(self, operation: BaseToken):
         self.operation = operation
-        self.right = right
+
+
+class BinaryOperationNode(OperationNode):
+    def __init__(self, left, operation: BaseToken, right):
+        super().__init__(operation)
+        self.left = left  # might be token or node
+        self.right = right  # might be token or node
         self.pos_start = left.pos_start
         self.pos_end = right.pos_end
 
@@ -53,9 +60,9 @@ class BinaryOperationNode:
         return f'({self.left}{self.operation}{self.right})'
 
 
-class UnaryOperationNode:
-    def __init__(self, operation, node):
-        self.operation = operation
+class UnaryOperationNode(OperationNode):
+    def __init__(self, operation: BaseToken, node):
+        super().__init__(operation)
         self.node = node
         self.pos_start = operation.pos_start
         self.pos_end = node.pos_end
@@ -64,10 +71,14 @@ class UnaryOperationNode:
         return f'({self.operation} {self.node})'
 
 
-class VariableAccessNode:
+class VariableNode:
     def __init__(self, name: ValueToken):
         self.name = name
 
+
+class VariableAccessNode(VariableNode):
+    def __init__(self, name: ValueToken):
+        super().__init__(name)
         self.pos_start = self.name.pos_start
         self.pos_end = self.name.pos_end
 
@@ -75,33 +86,17 @@ class VariableAccessNode:
         return f'{self.name}'
 
 
-class VariableAssignmentNode:
-    def __init__(self, var_type, name: ValueToken, value):
-        self.type = var_type
-        self.name = name
-        self.value = value
+class VariableAssignmentNode(VariableNode):
+    def __init__(self, type_token: BaseToken, name: ValueToken, value):
+        self.type = type_token
+        super().__init__(name)
+        self.value = value  # node
 
         self.pos_start = self.name.pos_start
         self.pos_end = self.value.pos_end
 
     def __repr__(self):
         return f'(Assignment: {self.type} {self.name}={self.value})'
-
-
-class IfNode:
-    def __init__(self, cases, else_case):
-        self.cases = cases
-        self.else_case = else_case
-
-        self.pos_start = self.cases[0][0].pos_start
-        self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
-
-    def __repr__(self):
-        result = '(If:'
-        for case in self.cases:
-            result += str(case)
-        result += str(self.else_case)
-        return result + ')'
 
 
 class WhileNode:
@@ -117,21 +112,21 @@ class WhileNode:
 
 
 class FunctionDefinitionNode:
-    def __init__(self, function_name: ValueToken, arguments, body, return_type):
+    def __init__(self, function_name: ValueToken, arguments, body, return_type_node: TypeNode):
         self.function_name = function_name
         self.arguments = arguments
         self.body = body
-        self.return_type = return_type
+        self.return_type_node = return_type_node
 
         self.pos_start = self.function_name.pos_start
         self.pos_end = self.body.pos_end
 
     def __repr__(self):
-        return f'(Function:{self.function_name}->{self.return_type} Args:{self.arguments} Body:{self.body})'
+        return f'(Function:{self.function_name}->{self.return_type_node} Args:{self.arguments} Body:{self.body})'
 
 
 class CallFunctionNode:
-    def __init__(self, function_name, arguments):
+    def __init__(self, function_name: ValueToken, arguments):
         self.function_name = function_name
         self.arguments = arguments
 
@@ -158,6 +153,22 @@ class StatementsNode:
         return result
 
 
+class IfNode:
+    def __init__(self, cases: List[tuple], else_case: StatementsNode):
+        self.cases = cases
+        self.else_case = else_case
+
+        self.pos_start = self.cases[0][0].pos_start
+        self.pos_end = (self.else_case or self.cases[-1][0]).pos_end
+
+    def __repr__(self):
+        result = '(If:'
+        for case in self.cases:
+            result += str(case)
+        result += str(self.else_case)
+        return result + ')'
+
+
 class ReturnNode:
     def __init__(self, node, pos_start, pos_end):
         self.node = node
@@ -171,30 +182,20 @@ class ReturnNode:
             return '<Return>'
 
 
-class TypeNode:
-    def __init__(self, token):
-        self.type = token.type
-        self.pos_start = token.pos_start
-        self.pos_end = token.pos_end
-
-    def __repr__(self):
-        return f'{self.type}'
-
-
 class FunctionArgumentNode:
-    def __init__(self, argument_name, argument_type):
+    def __init__(self, argument_name: ValueToken, argument_type_node: TypeNode):
         self.name = argument_name
-        self.type = argument_type
+        self.type = argument_type_node
 
         self.pos_start = argument_name.pos_start
-        self.pos_end = argument_type.pos_end
+        self.pos_end = argument_type_node.pos_end
 
     def __repr__(self):
         return f'({self.name}:{self.type})'
 
 
 class UnitNode:
-    def __init__(self, nominator, denominator, pos_start, pos_end):
+    def __init__(self, nominator: List[ValueToken], denominator: List[ValueToken], pos_start, pos_end):
         self.nominator = nominator
         self.denominator = denominator
         self.pos_start = pos_start
@@ -205,8 +206,8 @@ class UnitNode:
 
 
 class PhysNode:
-    def __init__(self, value, unit):
-        self.value = value
+    def __init__(self, value, unit: UnitNode):
+        self.value = value  # node
         self.unit = unit
 
         self.pos_start = value.pos_start

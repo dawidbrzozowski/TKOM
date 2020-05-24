@@ -1,5 +1,4 @@
 from errors.error import RunTimeError
-from lexer.token.token_type import TokenType
 from lexer.token.token_type_repr import token_type_repr
 
 
@@ -237,6 +236,6 @@ class Function:
 
 
 class FunctionArgument:
-    def __init__(self, name, type_):
+    def __init__(self, name, type_node):
         self.name = name
-        self.type = token_type_repr.get(type_)
+        self.type = token_type_repr.get(type_node.type)

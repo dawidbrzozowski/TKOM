@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from errors.error import RunTimeError
 from interpreting.context import Context
 from interpreting.utils import check_type_match
-from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue, Function, Value, FunctionArgument
+from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, Function, Value, FunctionArgument
 from lexer.lexer import StdInLexer, FileLexer
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
@@ -45,18 +45,17 @@ class Interpreter:
     def visit_StatementsNode(self, node: StatementsNode, context):
         for statement in node.statements:
             result = self.visit(statement, context)
-            if result:
-                return result
+        return result
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode, context):
-        number = self.visit(node.node, context)
+        value = self.visit(node.node, context)
 
         if node.operation.type == TokenType.T_MINUS:
-            number = number.multiply(Number(-1))
+            value = value.multiply(IntValue(-1))
         elif node.operation.type == TokenType.T_NOT:
-            number = number.not_()
-        number.set_position(node.pos_start, node.pos_end)
-        return number
+            value = value.not_()
+        value.set_position(node.pos_start, node.pos_end)
+        return value
 
     def visit_BinaryOperationNode(self, node: BinaryOperationNode, context):
         left = self.visit(node.left, context)
@@ -142,7 +141,7 @@ class Interpreter:
         function_name = node.function_name.value
         function_context = Context(function_name, context, context.position)
         arguments = [self.visit(argument, context) for argument in node.arguments]
-        return_type = node.return_type
+        return_type = node.return_type_node
         body = node.body
         function = Function(function_name, arguments, body, return_type, function_context, node.pos_start, node.pos_end)
         context.symbol_table.set(function_name, function)
