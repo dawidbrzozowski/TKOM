@@ -233,11 +233,10 @@ class StringValue(Value):
 
 
 class FunctionDefinition:
-    def __init__(self, name, arguments, body, return_type_node, context, pos_start, pos_end):
+    def __init__(self, name, arguments, body, return_type_node, pos_start, pos_end):
         self.name = name
         self.body = body
         self.return_type = return_type_node
-        self.context = context
         self.pos_start = pos_start
         self.pos_end = pos_end
         self.argument_definitions = arguments
