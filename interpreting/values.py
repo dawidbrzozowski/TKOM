@@ -1,5 +1,6 @@
 from errors.error import RunTimeError
-from interpreting.context import Context
+from lexer.token.token_type import TokenType
+from lexer.token.token_type_repr import token_type_repr
 
 
 class Value:
@@ -225,12 +226,17 @@ class StringValue(Value):
 
 
 class Function:
-    def __init__(self, name, arguments: [Value], body, return_type, parent_context, pos_start, pos_end):
+    def __init__(self, name, arguments, body, return_type, context, pos_start, pos_end):
         self.name = name
         self.body = body
         self.return_type = return_type
-        self.context = Context(name, parent_context, parent_context.position)
+        self.context = context
         self.pos_start = pos_start
         self.pos_end = pos_end
-        for argument in arguments:
-            self.context.symbol_table.set(argument)
+        self.argument_definitions = arguments
+
+
+class FunctionArgument:
+    def __init__(self, name, type_):
+        self.name = name
+        self.type = token_type_repr.get(type_)

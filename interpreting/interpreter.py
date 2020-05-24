@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from errors.error import RunTimeError
 from interpreting.context import Context
 from interpreting.utils import check_type_match
-from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue, Function
+from interpreting.values import Number, IntValue, DoubleValue, BoolValue, StringValue, Function, Value, FunctionArgument
 from lexer.lexer import StdInLexer, FileLexer
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
@@ -46,7 +46,7 @@ class Interpreter:
         for statement in node.statements:
             result = self.visit(statement, context)
             if result:
-                print(result)
+                return result
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode, context):
         number = self.visit(node.node, context)
@@ -140,16 +140,40 @@ class Interpreter:
 
     def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context):
         function_name = node.function_name.value
+        function_context = Context(function_name, context, context.position)
         arguments = [self.visit(argument, context) for argument in node.arguments]
         return_type = node.return_type
         body = node.body
-        function = Function(function_name, arguments, body, return_type, context, node.pos_start, node.pos_end)
+        function = Function(function_name, arguments, body, return_type, function_context, node.pos_start, node.pos_end)
         context.symbol_table.set(function_name, function)
+
+    def visit_CallFunctionNode(self, node: CallFunctionNode, context):
+        function_name = node.function_name.value
+        function = context.symbol_table.get(function_name)
+        if function is None:
+            raise RunTimeError(node.pos_start, f'Function with name: {function_name} is not defined.', context)
+        arguments = [self.visit(argument, context) for argument in node.arguments]
+        if len(arguments) != len(function.argument_definitions):
+            raise RunTimeError(node.pos_start,
+                               f'Wrong amount of arguments. Expected: {len(function.argument_definitions)}.'
+                               f' Got: {len(arguments)}', context)
+        for argument, defined_argument in zip(arguments, function.argument_definitions):
+            if argument.type_ != defined_argument.type:
+                raise RunTimeError(node.pos_start, f'Wrong type of argument. Expected {defined_argument.type} '
+                                                   f'got: {argument.type_}', context)
+            else:
+                function.context.symbol_table.set(defined_argument.name, argument)
+
+        return self.execute_function(function)
+
+    def execute_function(self, function):
+        result = self.visit(function.body, function.context)
+        return result
 
     def visit_FunctionArgumentNode(self, node: FunctionArgumentNode, context):
         variable_name = node.name.value
-        value = None
-        context.symbol_table.set(variable_name, value)
+        argument = FunctionArgument(variable_name, node.type.type)
+        return argument
 
     def visit_not_found(self, node, context):
         raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)
@@ -162,7 +186,7 @@ def main(args):
     print(ast)
     context = Context('<main>')
     interpreter = Interpreter()
-    interpreter.visit(ast, context)
+    print(interpreter.visit(ast, context))
 
 
 if __name__ == '__main__':
