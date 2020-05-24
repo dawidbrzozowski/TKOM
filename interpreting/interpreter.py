@@ -4,9 +4,11 @@ from argparse import ArgumentParser
 from errors.error import RunTimeError
 from interpreting.context import Context
 from interpreting.utils import check_type_match
-from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, Function, Value, FunctionArgument
+from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, Function, Value, FunctionArgument, \
+    ReturnValue
 from lexer.lexer import StdInLexer, FileLexer
 from lexer.token.token_type import TokenType
+from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
 from parsing.parser import Parser
 
@@ -43,9 +45,17 @@ class Interpreter:
         return StringValue(node.token.value, node.pos_start, node.pos_end, context)
 
     def visit_StatementsNode(self, node: StatementsNode, context):
+        result = None
         for statement in node.statements:
             result = self.visit(statement, context)
-        return result
+            if result == 'break':
+                break
+            elif result == 'continue':
+                break
+            elif isinstance(result, ReturnValue):
+                return result.value
+        if isinstance(result, (IntValue, StringValue, DoubleValue, BoolValue)):
+            return result
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode, context):
         value = self.visit(node.node, context)
@@ -103,7 +113,6 @@ class Interpreter:
         value = self.visit(node.value, context)
         self.verify_assignment(variable_name, value, node.type, context)
         context.symbol_table.set(variable_name.value, value)
-        return value
 
     def verify_assignment(self, variable_name, value, defined_type, context):
         check_type_match(defined_type, value, context)
@@ -134,7 +143,9 @@ class Interpreter:
     def visit_WhileNode(self, node: WhileNode, context):
         condition = self.visit(node.condition_node, context)
         while condition.value:
-            self.visit(node.body_node, context)
+            body_result = self.visit(node.body_node, context)
+            if body_result == 'break':
+                break
             condition = self.visit(node.condition_node, context)
 
     def visit_FunctionDefinitionNode(self, node: FunctionDefinitionNode, context):
@@ -163,7 +174,18 @@ class Interpreter:
             else:
                 function.context.symbol_table.set(defined_argument.name, argument)
 
-        return self.execute_function(function)
+        context.position = node.pos_start.copy()
+        function_result = self.execute_function(function)
+        if token_type_repr.get(function.return_type) == 'void' and function_result.type_ is not None:
+            raise RunTimeError(function.return_type.pos_start,
+                               f'Expected return type: {token_type_repr.get(function.return_type.type.type)}'
+                               f' got {function_result.type_}', function.context)
+        elif function_result.type_ != token_type_repr.get(function.return_type.type.type):
+            raise RunTimeError(function.return_type.pos_start,
+                               f'Expected return type: {token_type_repr.get(function.return_type.type.type)}'
+                               f' got {function_result.type_}', function.context)
+
+        return function_result
 
     def execute_function(self, function):
         result = self.visit(function.body, function.context)
@@ -174,6 +196,16 @@ class Interpreter:
         argument = FunctionArgument(variable_name, node.type.type)
         return argument
 
+    def visit_BreakNode(self, node: BreakNode, context):
+        return 'break'
+
+    def visit_ContinueNode(self, node: ContinueNode, context):
+        return 'continue'
+
+    def visit_ReturnNode(self, return_node: ReturnNode, context):
+        value = self.visit(return_node.node, context) if return_node.node else None
+        return ReturnValue(value)
+
     def visit_not_found(self, node, context):
         raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)
 
@@ -182,10 +214,12 @@ def main(args):
     lexer = StdInLexer() if args.source_type == 'stdin' else FileLexer(args.file_path)
     parser = Parser(lexer)
     ast = parser.parse()
-    print(ast)
     context = Context('<main>')
     interpreter = Interpreter()
-    print(interpreter.visit(ast, context))
+
+    res = interpreter.visit(ast, context)
+    if res:
+        print(res)
 
 
 if __name__ == '__main__':

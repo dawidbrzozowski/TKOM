@@ -8,7 +8,7 @@ class LexerError(Exception):
 
     def print_error_and_exit(self):
         print(f'Error: unexpected character: {self.illegal_char} at: {self.position.print_location()}')
-        exit(0)
+        exit()
 
 
 class InvalidSyntaxError(Exception):
@@ -18,7 +18,7 @@ class InvalidSyntaxError(Exception):
 
     def print_error_and_exit(self):
         print(f'Error: invalid syntax at: {self.pos_start.print_location()} {self.message}')
-        exit(0)
+        exit()
 
 
 class RunTimeError(Exception):
@@ -30,15 +30,18 @@ class RunTimeError(Exception):
     def print_error_and_exit(self):
         print(f'Error: {self.message} at: {self.pos_start.print_location()}')
         print(self.get_traceback())
-        exit(0)
+        exit()
 
     def get_traceback(self):
         traceback = ''
         position = self.pos_start
         context = self.context
 
-        while context:
+        while True:
             traceback = f'Line: {str(position.row)}, in {context.name}\n' + traceback
-            position = context.parent.position if context.parent else None
-            context = context.parent
+            if context.parent:
+                context = context.parent
+                position = context.position
+            else:
+                break
         return 'Traceback (most recent call last): \n' + traceback

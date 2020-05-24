@@ -4,7 +4,7 @@ from lexer.token.token_type_repr import token_type_repr
 
 
 def check_type_match(defined_type_token, actual_value, context):
-    if defined_type_token and not actual_value.type_ == token_type_repr.get(defined_type_token.type):
+    if defined_type_token and actual_value and not actual_value.type_ == token_type_repr.get(defined_type_token.type.type):
         raise RunTimeError(defined_type_token.pos_start,
-                           f'Expected type: {token_type_repr.get(defined_type_token.type)}'
+                           f'Expected type: {token_type_repr.get(defined_type_token.type.type)}'
                            f' got {actual_value.type_} instead.', context)

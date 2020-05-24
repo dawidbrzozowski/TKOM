@@ -87,7 +87,7 @@ class VariableAccessNode(VariableNode):
 
 
 class VariableAssignmentNode(VariableNode):
-    def __init__(self, type_token: BaseToken, name: ValueToken, value):
+    def __init__(self, type_token: TypeNode, name: ValueToken, value):
         self.type = type_token
         super().__init__(name)
         self.value = value  # node
