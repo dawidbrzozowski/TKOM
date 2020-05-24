@@ -119,7 +119,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value + other.value, context=self.context)
         else:
-            raise RunTimeError(other.pos_start, f"Can't add values of type int and {type(other)}", self.context)
+            raise self.raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, IntValue):
@@ -127,7 +127,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value - other.value, context=self.context)
         else:
-            raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
+            raise self.raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, IntValue):
@@ -137,7 +137,7 @@ class IntValue(Number):
         elif isinstance(other, StringValue):
             return StringValue(self.value * other.value, context=self.context)
         else:
-            raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
+            raise self.raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, IntValue):
@@ -147,7 +147,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value / other.value, context=self.context)
         else:
-            raise RunTimeError(other.pos_start, f"Can't subtract values of type int and {type(other)}", self.context)
+            raise self.raise_runtime_error_for_action('/', other)
 
     def copy(self):
         return IntValue(self.value, self.pos_start, self.pos_end, self.context)
@@ -163,20 +163,28 @@ class DoubleValue(Number):
     def add(self, other):
         if isinstance(other, Number):
             return DoubleValue(self.value + other.value, context=self.context)
+        else:
+            raise self.raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, Number):
-            return IntValue(self.value - other.value, context=self.context)
+            return DoubleValue(self.value - other.value, context=self.context)
+        else:
+            raise self.raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, Number):
-            return IntValue(self.value * other.value, context=self.context)
+            return DoubleValue(self.value * other.value, context=self.context)
+        else:
+            raise self.raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, Number):
             if other.value == 0:
                 raise RunTimeError(other.pos_start, 'Division by zero.', self.context)
-            return IntValue(self.value / other.value, context=self.context)
+            return DoubleValue(self.value / other.value, context=self.context)
+        else:
+            raise self.raise_runtime_error_for_action('/', other)
 
     def copy(self):
         return DoubleValue(self.value, self.pos_start, self.pos_end, self.context)
@@ -224,7 +232,7 @@ class StringValue(Value):
         self.raise_runtime_error_for_action('*', other)
 
 
-class Function:
+class FunctionDefinition:
     def __init__(self, name, arguments, body, return_type_node, context, pos_start, pos_end):
         self.name = name
         self.body = body

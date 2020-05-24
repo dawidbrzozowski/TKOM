@@ -1,9 +1,9 @@
 class Context:
-    def __init__(self, name, parent=None, position=None):
+    def __init__(self, name, parent=None, position=None, use_parent_symbol_table=False):
         self.name = name
         self.parent = parent
         self.position = position
-        self.symbol_table = SymbolTable(parent.symbol_table) if parent else SymbolTable()
+        self.symbol_table = SymbolTable(parent.symbol_table) if parent and use_parent_symbol_table else SymbolTable()
 
 
 class SymbolTable:
