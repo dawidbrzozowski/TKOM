@@ -18,7 +18,6 @@ def main(args):
     parser = Parser(lexer)
     ast = parser.parse()
     interpreter = Interpreter()
-    print(ast)
     res = interpreter.interpret(ast)
     if res:
         print(res)

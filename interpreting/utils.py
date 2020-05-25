@@ -1,5 +1,5 @@
 from errors.error import RunTimeError
-from interpreting.values import FunctionDefinition
+from interpreting.values.function_values import FunctionDefinition
 
 
 def check_argument_correctness(function: FunctionDefinition, actual_arguments, context):

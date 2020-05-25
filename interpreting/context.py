@@ -1,5 +1,5 @@
 from errors.error import RunTimeError
-from interpreting.values import FunctionDefinition
+from interpreting.values.function_values import FunctionDefinition
 from lexer.token.tokens import ValueToken
 
 

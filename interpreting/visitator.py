@@ -1,8 +1,10 @@
 from errors.error import RunTimeError, run_with_exception_safety
 from interpreting.context import ContextManager
 from interpreting.utils import check_argument_correctness, check_return_type
-from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, FunctionDefinition, FunctionArgument, \
-    ReturnValue, KeywordValue, UnitValue, PhysValue
+from interpreting.values.basic_values import IntValue, DoubleValue, BoolValue, StringValue
+from interpreting.values.keyword_values import KeywordValue, ReturnValue
+from interpreting.values.physical_values import UnitValue, PhysValue
+from interpreting.values.function_values import FunctionDefinition, FunctionArgument
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
 
@@ -152,7 +154,7 @@ class Visitator:
         return argument
 
     def visit_KeywordNode(self, node: KeywordNode):
-        return KeywordValue(node.value, node.pos_start, node.pos_end)
+        return KeywordValue(node.value, node.pos_start, node.pos_end, self.context_manager.current_context)
 
     def visit_ReturnNode(self, return_node: ReturnNode):
         value = self.visit(return_node.node) if return_node.node else None
