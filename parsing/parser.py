@@ -28,8 +28,10 @@ class Parser:
         self.current_token = None
 
     def parse(self):
+        result = None
         self._next_token()
-        result = self._parse_statements(end_token=TokenType.T_EOT)
+        if self.current_token.type != TokenType.T_EOT:
+            result = self._parse_statements(end_token=TokenType.T_EOT)
         return result
 
     def _parse_statements(self, end_token):

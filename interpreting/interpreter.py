@@ -10,8 +10,10 @@ class Interpreter:
         self.visitator = Visitator()
 
     def interpret(self, ast):
-        return self.visitator.perform_visiting(ast)
-
+        if ast:
+            return self.visitator.perform_visiting(ast)
+        else:
+            return 'Provide code and try again.'
 
 def main(args):
     lexer = StdInLexer() if args.source_type == 'stdin' else FileLexer(args.file_path)
