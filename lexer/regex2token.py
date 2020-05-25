@@ -60,6 +60,6 @@ regex2token = {
     r'\d+\.\d+(?![\w])': TokenType.VT_DOUBLE,
     r'(0|[1-9]\d*)(?![\w])': TokenType.VT_INT,
     r'\'.\'(?![\w\d])': TokenType.VT_CHAR,
-    r'\".*\"(?![\w\d])': TokenType.VT_STRING,
+    r'\".*?\"(?![\w\d])': TokenType.VT_STRING,
     r'[a-zA-Z_][a-zA-Z0-9_]*': TokenType.VT_ID
 }
