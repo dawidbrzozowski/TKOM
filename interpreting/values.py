@@ -340,6 +340,8 @@ class UnitValue(Value):
 
 
 class PhysValue(Value):
+    type_ = 'phys'
+
     def __init__(self, value, unit: UnitValue, pos_start=None, pos_end=None, context=None):
         super().__init__(value, pos_start, pos_end, context)
         self.unit = unit
@@ -384,6 +386,9 @@ class PhysValue(Value):
 
     def copy(self):
         return PhysValue(self.value, self.unit, self.pos_start, self.pos_end, self.context)
+
+    def __repr__(self):
+        return f'{self.value}*{self.unit}'
 
 
 class ReturnValue(KeywordValue):

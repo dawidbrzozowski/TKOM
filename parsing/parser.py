@@ -245,8 +245,7 @@ class Parser:
         raise InvalidSyntaxError(self._get_last_token_location(), 'Expected expression.')
 
     def _parse_phys_value(self):
-        value = self.current_token
-        self._next_token()
+        value = self._parse_numerical_value()
         self._check_token_and_next(TokenType.T_AMPERSAND)
         unit = self._parse_unit_value()
         return PhysNode(value, unit)
