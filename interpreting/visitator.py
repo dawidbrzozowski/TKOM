@@ -2,7 +2,7 @@ from errors.error import RunTimeError, run_with_exception_safety
 from interpreting.context import ContextManager
 from interpreting.utils import check_argument_correctness, check_return_type
 from interpreting.values import IntValue, DoubleValue, BoolValue, StringValue, FunctionDefinition, FunctionArgument, \
-    ReturnValue, KeywordValue
+    ReturnValue, KeywordValue, UnitValue
 from lexer.token.token_type import TokenType
 from parsing.nodes import *
 
@@ -38,7 +38,7 @@ class Visitator:
                 return result.value
             elif isinstance(result, KeywordValue):
                 return result
-        if isinstance(result, (IntValue, StringValue, DoubleValue, BoolValue, KeywordValue)):
+        if isinstance(result, (IntValue, StringValue, DoubleValue, BoolValue, KeywordValue, UnitValue)):
             return result
 
     def visit_UnaryOperationNode(self, node: UnaryOperationNode):
@@ -158,5 +158,13 @@ class Visitator:
         value = self.visit(return_node.node) if return_node.node else None
         return ReturnValue(value, return_node.pos_start, return_node.pos_end)
 
-    def visit_not_found(self, node, context):
-        raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}', context)
+    def visit_UnitNode(self, node: UnitNode):
+        return UnitValue(node.fraction, node.pos_start, node.pos_end, self.context_manager.current_context)
+
+    def visit_PhysNode(self, node: PhysNode):
+        unit_value = self.visit(node.unit)
+        return PhysValue(node.value, unit_value, node.pos_start, node.pos_end, self.context_manager.current_context)
+
+    def visit_not_found(self, node):
+        raise RunTimeError(node.pos_start, f'Could not find method for node: {type(node).__name__}',
+                           self.context_manager.current_context)

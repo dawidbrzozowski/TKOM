@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List
 
 from lexer.token.tokens import ValueToken, BaseToken
@@ -195,13 +196,16 @@ class FunctionArgumentNode:
 
 class UnitNode:
     def __init__(self, nominator: List[ValueToken], denominator: List[ValueToken], pos_start, pos_end):
-        self.nominator = nominator
-        self.denominator = denominator
+        self.fraction = defaultdict(int)
+        for element in nominator:
+            self.fraction[element.value] += 1
+        for element in denominator:
+            self.fraction[element.value] -= 1
         self.pos_start = pos_start
         self.pos_end = pos_end
 
     def __repr__(self):
-        return f'(Unit: {self.nominator}/{self.denominator})'
+        return f'(Unit: {self.fraction})'
 
 
 class PhysNode:
