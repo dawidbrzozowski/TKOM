@@ -10,7 +10,7 @@ class Interpreter:
         self.visitator = Visitator()
 
     def interpret(self, ast):
-        return self.visitator.visit(ast)
+        return self.visitator.perform_visiting(ast)
 
 
 def main(args):

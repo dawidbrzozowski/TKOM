@@ -21,44 +21,44 @@ class Value:
         self.context = context
 
     def add(self, other):
-        self.raise_runtime_error_for_action('+', other)
+        self._raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
-        self.raise_runtime_error_for_action('-', other)
+        self._raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
-        self.raise_runtime_error_for_action('*', other)
+        self._raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
-        self.raise_runtime_error_for_action('/', other)
+        self._raise_runtime_error_for_action('/', other)
 
     def is_equal(self, other):
-        self.raise_runtime_error_for_action('==', other)
+        self._raise_runtime_error_for_action('==', other)
 
     def is_not_equal(self, other):
-        self.raise_runtime_error_for_action('!=', other)
+        self._raise_runtime_error_for_action('!=', other)
 
     def is_greater_than(self, other):
-        self.raise_runtime_error_for_action('>', other)
+        self._raise_runtime_error_for_action('>', other)
 
     def is_less_than(self, other):
-        self.raise_runtime_error_for_action('<', other)
+        self._raise_runtime_error_for_action('<', other)
 
     def is_greater_or_eq(self, other):
-        self.raise_runtime_error_for_action('>=', other)
+        self._raise_runtime_error_for_action('>=', other)
 
     def is_less_or_eq(self, other):
-        self.raise_runtime_error_for_action('<=', other)
+        self._raise_runtime_error_for_action('<=', other)
 
-    def raise_runtime_error_for_action(self, operator, other):
+    def _raise_runtime_error_for_action(self, operator, other):
         raise RunTimeError(self.pos_start,
                            f'{operator} not defined for type {self.type_} and {other.type_}', self.context)
 
     def and_(self, other):
-        self.raise_runtime_error_for_action('and', other)
+        self._raise_runtime_error_for_action('and', other)
 
     def or_(self, other):
-        self.raise_runtime_error_for_action('or', other)
+        self._raise_runtime_error_for_action('or', other)
 
     def not_(self):
         raise RunTimeError(self.pos_start, f"'not' not defined for type: {self.type_}", self.context)
@@ -72,37 +72,37 @@ class Number(Value):
         if isinstance(other, Number):
             return BoolValue(self.value == other.value, self.context)
         else:
-            self.raise_runtime_error_for_action('==', other)
+            self._raise_runtime_error_for_action('==', other)
 
     def is_not_equal(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value != other.value, self.context)
         else:
-            self.raise_runtime_error_for_action('!=', other)
+            self._raise_runtime_error_for_action('!=', other)
 
     def is_greater_than(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value > other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('>', other)
+            self._raise_runtime_error_for_action('>', other)
 
     def is_less_or_eq(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value <= other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('<=', other)
+            self._raise_runtime_error_for_action('<=', other)
 
     def is_less_than(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value < other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('<', other)
+            self._raise_runtime_error_for_action('<', other)
 
     def is_greater_or_eq(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value >= other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('>=', other)
+            self._raise_runtime_error_for_action('>=', other)
 
 
 class IntValue(Number):
@@ -118,7 +118,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value + other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('+', other)
+            raise self._raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, IntValue):
@@ -126,7 +126,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value - other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('-', other)
+            raise self._raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, IntValue):
@@ -136,7 +136,7 @@ class IntValue(Number):
         elif isinstance(other, StringValue):
             return StringValue(self.value * other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('*', other)
+            raise self._raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, IntValue):
@@ -146,7 +146,7 @@ class IntValue(Number):
         elif isinstance(other, DoubleValue):
             return DoubleValue(self.value / other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('/', other)
+            raise self._raise_runtime_error_for_action('/', other)
 
     def copy(self):
         return IntValue(self.value, self.pos_start, self.pos_end, self.context)
@@ -163,19 +163,19 @@ class DoubleValue(Number):
         if isinstance(other, Number):
             return DoubleValue(self.value + other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('+', other)
+            raise self._raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, Number):
             return DoubleValue(self.value - other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('-', other)
+            raise self._raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, Number):
             return DoubleValue(self.value * other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('*', other)
+            raise self._raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, Number):
@@ -183,7 +183,7 @@ class DoubleValue(Number):
                 raise RunTimeError(other.pos_start, 'Division by zero.', self.context)
             return DoubleValue(self.value / other.value, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('/', other)
+            raise self._raise_runtime_error_for_action('/', other)
 
     def copy(self):
         return DoubleValue(self.value, self.pos_start, self.pos_end, self.context)
@@ -202,13 +202,13 @@ class BoolValue(Value):
         if isinstance(other, Number):
             return BoolValue(self.value and other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('and', other)
+            self._raise_runtime_error_for_action('and', other)
 
     def or_(self, other):
         if isinstance(other, Number):
             return BoolValue(self.value or other.value, self.pos_start, self.pos_end, self.context)
         else:
-            self.raise_runtime_error_for_action('or', other)
+            self._raise_runtime_error_for_action('or', other)
 
     def not_(self):
         return BoolValue(not self.value, self.pos_start, self.pos_end, self.context)
@@ -226,24 +226,24 @@ class StringValue(Value):
     def add(self, other):
         if isinstance(other, StringValue):
             return StringValue(self.value + other.value, context=self.context)
-        self.raise_runtime_error_for_action('+', other)
+        self._raise_runtime_error_for_action('+', other)
 
     def multiply(self, other):
         if isinstance(other, IntValue):
             return StringValue(self.value * other.value, context=self.context)
-        self.raise_runtime_error_for_action('*', other)
+        self._raise_runtime_error_for_action('*', other)
 
     def is_equal(self, other):
         if isinstance(other, StringValue):
             return BoolValue(self.value == other.value, context=self.context)
         else:
-            self.raise_runtime_error_for_action('==', other)
+            self._raise_runtime_error_for_action('==', other)
 
     def is_not_equal(self, other):
         if isinstance(other, StringValue):
             return BoolValue(self.value != other.value, context=self.context)
         else:
-            self.raise_runtime_error_for_action('!=', other)
+            self._raise_runtime_error_for_action('!=', other)
 
     def copy(self):
         return StringValue(self.value, self.pos_start, self.pos_end, self.context)

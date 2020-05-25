@@ -15,13 +15,13 @@ class UnitValue(Value):
         if isinstance(other, UnitValue):
             return UnitValue(self.value, self.pos_start, other.pos_end, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('+', other)
+            raise self._raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, UnitValue):
             return UnitValue(self.value, self.pos_start, other.pos_end, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('-', other)
+            raise self._raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, UnitValue):
@@ -30,7 +30,7 @@ class UnitValue(Value):
                 product[key] += other.value.get(key, 0)
             return UnitValue(product, self.pos_start, self.pos_end, context=self.context).reduce()
         else:
-            raise self.raise_runtime_error_for_action('*', other)
+            raise self._raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, UnitValue):
@@ -39,7 +39,7 @@ class UnitValue(Value):
                 product[key] -= other.value.get(key, 0)
             return UnitValue(product, self.pos_start, self.pos_end, context=self.context).reduce()
         else:
-            raise self.raise_runtime_error_for_action('/', other)
+            raise self._raise_runtime_error_for_action('/', other)
 
     def reduce(self):
         self.value = defaultdict(int, {key: value for key, value in self.value.items() if self.value[key] != 0})
@@ -96,7 +96,7 @@ class PhysValue(Value):
                 raise RunTimeError(self.pos_start, f"Tried to add Phys with units: {self.unit}, {other.unit}",
                                    self.context)
         else:
-            raise self.raise_runtime_error_for_action('+', other)
+            raise self._raise_runtime_error_for_action('+', other)
 
     def subtract(self, other):
         if isinstance(other, PhysValue):
@@ -107,7 +107,7 @@ class PhysValue(Value):
                 raise RunTimeError(self.pos_start, f"Tried to subtract Phys with units: {self.unit}, {other.unit}",
                                    self.context)
         else:
-            raise self.raise_runtime_error_for_action('-', other)
+            raise self._raise_runtime_error_for_action('-', other)
 
     def multiply(self, other):
         if isinstance(other, PhysValue):
@@ -115,7 +115,7 @@ class PhysValue(Value):
             unit_product = self.unit.multiply(other.unit)
             return PhysValue(value_product, unit_product, self.pos_start, self.pos_end, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('*', other)
+            raise self._raise_runtime_error_for_action('*', other)
 
     def divide(self, other):
         if isinstance(other, PhysValue):
@@ -123,7 +123,7 @@ class PhysValue(Value):
             unit_quotient = self.unit.divide(other.unit)
             return PhysValue(value_quotient, unit_quotient, self.pos_start, self.pos_end, context=self.context)
         else:
-            raise self.raise_runtime_error_for_action('/', other)
+            raise self._raise_runtime_error_for_action('/', other)
 
     def copy(self):
         return PhysValue(self.value, self.unit, self.pos_start, self.pos_end, self.context)

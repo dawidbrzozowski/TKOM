@@ -68,11 +68,11 @@ class ContextManager:
         return self.global_context.get_variable(function_name)
 
     def add_variable(self, variable_name, value, expected_type):
-        self.verify_assignment(variable_name, value, expected_type)
+        self._verify_assignment(variable_name, value, expected_type)
         self.current_context.add_variable(variable_name.value, value)
 
-    def verify_assignment(self, variable_name: ValueToken, value, expected_type):
-        self.check_type_match(expected_type, value)
+    def _verify_assignment(self, variable_name: ValueToken, value, expected_type):
+        self._check_type_match(expected_type, value)
         if expected_type is None:
             current_value = self.get_variable(variable_name)
             if not current_value:
@@ -84,7 +84,7 @@ class ContextManager:
                                    f'Tried to put a value of type {value.type_}'
                                    f' to a variable of type {current_value.type_}', self.current_context)
 
-    def check_type_match(self, expected_type, actual_value):
+    def _check_type_match(self, expected_type, actual_value):
         if expected_type and actual_value and not actual_value.type_ == str(expected_type):
             raise RunTimeError(expected_type.pos_start,
                                f'Expected type: {str(expected_type)} got {actual_value.type_} instead.',
