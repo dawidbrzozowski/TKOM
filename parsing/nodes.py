@@ -205,7 +205,10 @@ class UnitNode:
         self.pos_end = pos_end
 
     def __repr__(self):
-        return f'(Unit: {self.fraction})'
+        result = '(Unit:'
+        for key in self.fraction:
+            result += f'{key}^{self.fraction[key]}'
+        return result + ')'
 
 
 class PhysNode:

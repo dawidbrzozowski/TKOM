@@ -31,11 +31,11 @@ class LexerBase:
         return True if self.token_iterator < len(self.all_tokens) else False
 
     def _get_all_tokens(self):
-        tokens_from_stdin = []
+        all_tokens = []
         while not self.source.is_end_of_text():
             tokens = self._get_tokens_from_next_line()
-            tokens_from_stdin.extend(tokens)
-        return tokens_from_stdin
+            all_tokens.extend(tokens)
+        return all_tokens
 
     def _get_tokens_from_next_line(self):
         line = self.source.read_line()

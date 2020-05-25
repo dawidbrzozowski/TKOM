@@ -26,9 +26,9 @@ class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = None
-        self._next_token()
 
     def parse(self):
+        self._next_token()
         result = self._parse_statements(end_token=TokenType.T_EOT)
         return result
 
