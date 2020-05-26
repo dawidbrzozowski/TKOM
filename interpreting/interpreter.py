@@ -15,19 +15,28 @@ class Interpreter:
         else:
             return 'Provide code and try again.'
 
+
+class Evaluator:
+    def __init__(self):
+        self.interpreter = Interpreter()
+
+    def evaluate(self, source_type, file_path=None):
+        lexer = StdInLexer() if source_type == 'stdin' else FileLexer(file_path)
+        parser = Parser(lexer)
+        ast = parser.parse()
+        return self.interpreter.interpret(ast)
+
+
 def main(args):
-    lexer = StdInLexer() if args.source_type == 'stdin' else FileLexer(args.file_path)
-    parser = Parser(lexer)
-    ast = parser.parse()
-    interpreter = Interpreter()
-    res = interpreter.interpret(ast)
-    if res:
-        print(res)
+    evaluator = Evaluator()
+    result = evaluator.evaluate(args.source_type, args.file_path)
+    if result:
+        print(result)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--file_path', type=str, default='test_files/testfile1line.txt', required=False)
+    parser.add_argument('--file_path', type=str, default='test_files/presentation_test.txt', required=False)
     parser.add_argument('--source_type', type=str, choices=['stdin', 'file'], default='file')
     args = parser.parse_args()
     main(args)
