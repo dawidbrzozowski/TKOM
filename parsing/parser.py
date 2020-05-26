@@ -1,14 +1,22 @@
 from argparse import ArgumentParser
 
-from errors.error import InvalidSyntaxError
+from errors.error import InvalidSyntaxError, run_with_exception_safety
 from lexer.lexer import FileLexer, StdInLexer
 from lexer.token.token_type import TokenType
-from lexer.token.token_type_repr import token_type_repr
 from parsing.nodes import *
 
-VARIABLE_TYPES = (TokenType.T_STRING, TokenType.T_DOUBLE, TokenType.T_INT, TokenType.T_PHYS, TokenType.T_UNIT)
+VARIABLE_TYPES = [TokenType.T_STRING,
+                  TokenType.T_DOUBLE,
+                  TokenType.T_INT,
+                  TokenType.T_PHYS,
+                  TokenType.T_UNIT,
+                  TokenType.T_BOOL]
 
-COMPARISONS = (TokenType.T_EQ, TokenType.T_NOT_EQ, TokenType.T_GREATER, TokenType.T_GREATER_OR_EQ, TokenType.T_LESS,
+COMPARISONS = (TokenType.T_EQ,
+               TokenType.T_NOT_EQ,
+               TokenType.T_GREATER,
+               TokenType.T_GREATER_OR_EQ,
+               TokenType.T_LESS,
                TokenType.T_LESS_OR_EQ)
 
 NUMERICAL_VALUES = [TokenType.VT_INT, TokenType.VT_DOUBLE]
@@ -18,26 +26,29 @@ class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = None
-        self._next_token()
 
     def parse(self):
-        result = self._parse_statements(end_token=TokenType.T_EOT)
+        result = None
+        self._next_token()
+        if self.current_token.type != TokenType.T_EOT:
+            result = self._parse_statements(end_token=TokenType.T_EOT)
         return result
 
     def _parse_statements(self, end_token):
         statements = []
         pos_start = self.current_token.pos_start.copy()
 
-        statement = self._perform_method(self._parse_statement)
+        statement = self._parse_statement()
         statements.append(statement)
 
         while self.current_token.type != end_token:
-            statement = self._perform_method(self._parse_statement)
+            statement = self._parse_statement()
             statements.append(statement)
         pos_end = self.current_token.pos_end
         self._check_token_and_next(self.current_token.type)
         return StatementsNode(statements, pos_start, pos_end)
 
+    @run_with_exception_safety
     def _parse_statement(self):
         token = self.current_token
         if token.type == TokenType.T_IF:
@@ -59,11 +70,11 @@ class Parser:
 
         elif self._is_current_token_type(TokenType.T_BREAK):
             self._check_token_and_next(TokenType.T_SEMICOLON)
-            return BreakNode(token.pos_start, self.current_token.pos_start)
+            return KeywordNode('break', token.pos_start, token.pos_end)
 
         elif self._is_current_token_type(TokenType.T_CONTINUE):
             self._check_token_and_next(TokenType.T_SEMICOLON)
-            return ContinueNode(token.pos_start, self.current_token.pos_start)
+            return KeywordNode('continue', token.pos_start, token.pos_end)
 
         expression = self._parse_expression()
         self._check_token_and_next(TokenType.T_SEMICOLON)
@@ -214,6 +225,10 @@ class Parser:
             if self._show_upcoming_token().type == TokenType.T_AMPERSAND:
                 return self._parse_phys_value()
 
+        elif token.type in (TokenType.T_TRUE, TokenType.T_FALSE):
+            self._next_token()
+            return BoolNode(token)
+
         elif token.type == TokenType.T_VERTICAL_BAR:
             return self._parse_unit_value()
 
@@ -232,8 +247,7 @@ class Parser:
         raise InvalidSyntaxError(self._get_last_token_location(), 'Expected expression.')
 
     def _parse_phys_value(self):
-        value = self.current_token
-        self._next_token()
+        value = self._parse_numerical_value()
         self._check_token_and_next(TokenType.T_AMPERSAND)
         unit = self._parse_unit_value()
         return PhysNode(value, unit)
@@ -290,7 +304,7 @@ class Parser:
         return CallFunctionNode(function_name, arguments)
 
     def _parse_type(self, include_void=False):
-        variable_types = VARIABLE_TYPES or TokenType.T_VOID if include_void else VARIABLE_TYPES
+        variable_types = VARIABLE_TYPES + [TokenType.T_VOID] if include_void else VARIABLE_TYPES
         if self.current_token.type not in variable_types:
             raise InvalidSyntaxError(self._get_last_token_location(), 'Expected type.')
         token = self.current_token
@@ -312,7 +326,7 @@ class Parser:
 
     def _check_token_and_next(self, expected: TokenType):
         if not self.current_token.type == expected:
-            raise InvalidSyntaxError(self._get_last_token_location(), f'Expected {token_type_repr.get(expected)}')
+            raise InvalidSyntaxError(self._get_last_token_location(), f'Expected {expected.as_string()}')
         self._next_token()
 
     def _get_token_if_type_and_next(self, expected: TokenType):
@@ -329,14 +343,6 @@ class Parser:
 
     def _get_last_token_location(self):
         return self.lexer.show_prev_token_location()
-
-    def _perform_method(self, method):
-        result = None
-        try:
-            result = method()
-        except InvalidSyntaxError as e:
-            e.print_error_and_exit()
-        return result
 
 
 def main(args):

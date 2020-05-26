@@ -1,5 +1,5 @@
 from lexer.token.token_type import TokenType
-from lexer.token.token_type_repr import token_type_repr
+
 
 class Position:
     def __init__(self, row, column):
@@ -22,10 +22,8 @@ class BaseToken:
         self.pos_start = pos_start
         self.pos_end = pos_end
 
-    # def __repr__(self):
-    #     return f'TOKEN (Type: {self.type} {self.print_location()})'
     def __repr__(self):
-        return f'{token_type_repr.get(self.type)}'
+        return self.type.as_string()
 
     def __eq__(self, other):
         return True if self.type == other.type else False
@@ -41,11 +39,8 @@ class ValueToken(BaseToken):
         super().__init__(type_, pos_start, pos_end)
         self.value = value
 
-    # def __repr__(self):
-    #     return f'TOKEN (Type: {self.type} Value: {self.value} {self.print_location()})'
-
     def __repr__(self):
-        return f'{token_type_repr.get(self.type)}:{self.value}'
+        return f'{self.type.as_string()}:{self.value}'
 
     def __eq__(self, other):
         if self.type == other.type and self.value == other.value:
@@ -55,6 +50,12 @@ class ValueToken(BaseToken):
 
 def create_token(token_type: TokenType, value, pos_start, pos_end):
     if token_type.has_value_field():
+        if token_type == TokenType.VT_INT:
+            value = int(value)
+        elif token_type == TokenType.VT_DOUBLE:
+            value = float(value)
+        elif token_type == TokenType.VT_STRING:
+            value = value[1:-1]
         return ValueToken(token_type, value, pos_start, pos_end)
     else:
         return BaseToken(token_type, pos_start, pos_end)
